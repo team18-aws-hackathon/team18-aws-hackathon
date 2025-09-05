@@ -3,7 +3,6 @@ import boto3
 import os
 from botocore.exceptions import ClientError
 
-polly_client = boto3.client('polly')
 s3_client = boto3.client('s3')
 
 S3_BUCKET = os.environ.get('S3_BUCKET')
@@ -33,11 +32,8 @@ def handle_generate_voice(event, headers):
                 'body': json.dumps({'error': 'compliment is required'})
             }
         
-        # Polly로 음성 생성
-        audio_data = generate_voice(compliment)
-        
-        # S3에 음성 파일 업로드
-        voice_url = upload_voice_to_s3(diary_id, audio_data)
+        # 임시 더미 음성 파일 생성 (향후 TTS 서비스 연동 예정)
+        voice_url = create_dummy_voice_url(diary_id)
         
         return {
             'statusCode': 200,
@@ -55,52 +51,9 @@ def handle_generate_voice(event, headers):
             'body': json.dumps({'error': 'Internal server error'})
         }
 
-def generate_voice(text):
+def create_dummy_voice_url(diary_id):
     """
-    Amazon Polly를 사용하여 음성 생성
+    더미 음성 URL 생성 (향후 TTS 서비스 연동 예정)
     """
-    try:
-        # 이모지 제거 (Polly가 처리하지 못함)
-        clean_text = ''.join(char for char in text if ord(char) < 0x1F600 or ord(char) > 0x1F64F)
-        clean_text = ''.join(char for char in clean_text if ord(char) < 0x1F300 or ord(char) > 0x1F5FF)
-        clean_text = ''.join(char for char in clean_text if ord(char) < 0x1F680 or ord(char) > 0x1F6FF)
-        clean_text = ''.join(char for char in clean_text if ord(char) < 0x2600 or ord(char) > 0x26FF)
-        
-        response = polly_client.synthesize_speech(
-            Text=clean_text,
-            OutputFormat='mp3',
-            VoiceId='Seoyeon',  # 한국어 여성 목소리
-            Engine='neural'
-        )
-        
-        return response['AudioStream'].read()
-        
-    except ClientError as e:
-        raise Exception(f"Polly TTS error: {e}")
-
-def upload_voice_to_s3(diary_id, audio_data):
-    """
-    생성된 음성 파일을 S3에 업로드하고 pre-signed URL 반환
-    """
-    try:
-        key = f"voices/{diary_id}.mp3"
-        
-        # S3에 음성 파일 업로드
-        s3_client.put_object(
-            Bucket=S3_BUCKET,
-            Key=key,
-            Body=audio_data,
-            ContentType='audio/mpeg'
-        )
-        
-        # Pre-signed URL 생성
-        presigned_url = s3_client.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': S3_BUCKET, 'Key': key},
-            ExpiresIn=3600
-        )
-        
-        return presigned_url
-        
-    except ClientError as e:
-        raise Exception(f"S3 upload error: {e}")
+    # 임시로 더미 URL 반환
+    return f"https://s3.amazonaws.com/quokka/voices/{diary_id}.mp3"

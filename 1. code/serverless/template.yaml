@@ -61,7 +61,6 @@ Resources:
             Action:
               - bedrock:InvokeModel
               - bedrock:InvokeModelWithResponseStream
-              - polly:SynthesizeSpeech
             Resource: '*'
 
   # S3 Bucket for storing Bedrock results

@@ -88,24 +88,22 @@ def generate_compliment(content, user_type):
 """
         
         request_body = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 200,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
+            "inputText": prompt,
+            "textGenerationConfig": {
+                "maxTokenCount": 200,
+                "temperature": 0.7,
+                "topP": 0.9
+            }
         }
         
         response = bedrock_client.invoke_model(
-            modelId='anthropic.claude-3-sonnet-20240229-v1:0',
+            modelId='amazon.titan-text-premier-v1:0',
             body=json.dumps(request_body),
             contentType='application/json'
         )
         
         response_body = json.loads(response['body'].read())
-        return response_body['content'][0]['text'].strip()
+        return response_body['results'][0]['outputText'].strip()
         
     except ClientError as e:
         raise Exception(f"Bedrock API error: {e}")
