@@ -1,0 +1,50 @@
+name: Front-end CI (TS + React + Vite)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  ci:
+    name: Front-end code check and build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js 22
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+        cache-dependency-path: './1. code/front/package-lock.json'
+    
+    - name: Install dependencies
+      working-directory: ./1. code/front
+      run: npm ci
+    
+    - name: Lint check
+      working-directory: ./1. code/front
+      run: npm run lint
+    
+    - name: Format check
+      working-directory: ./1. code/front
+      run: npm run format:check
+    
+    - name: TypeScript type check
+      working-directory: ./1. code/front
+      run: npx tsc --noEmit
+    
+    - name: Build
+      working-directory: ./1. code/front
+      run: npm run build
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files
+        path: front/dist/
+        retention-days: 30
