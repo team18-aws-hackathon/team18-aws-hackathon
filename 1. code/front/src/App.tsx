@@ -1,18 +1,28 @@
-import { useState } from 'react'
-import { ThemeProvider } from '@mui/material/styles'
-import { WelcomePage, DiaryPage } from '@/pages'
-import { theme } from '@/theme'
+import { useState } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import { WelcomePage, DiaryPage, LoadingPage } from '@/pages';
+import { theme } from '@/theme';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'welcome' | 'diary'>('welcome')
+  const [currentPage, setCurrentPage] = useState<
+    'welcome' | 'diary' | 'loading'
+  >('welcome');
 
   const handleWelcomeComplete = () => {
-    setCurrentPage('diary')
-  }
+    setCurrentPage('diary');
+  };
 
   const handleBackToWelcome = () => {
-    setCurrentPage('welcome')
-  }
+    setCurrentPage('welcome');
+  };
+
+  const handleSaveEntry = () => {
+    setCurrentPage('loading');
+  };
+
+  const handleBackToDiary = () => {
+    setCurrentPage('diary');
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -20,10 +30,11 @@ function App() {
         <WelcomePage onComplete={handleWelcomeComplete} />
       )}
       {currentPage === 'diary' && (
-        <DiaryPage onBack={handleBackToWelcome} />
+        <DiaryPage onBack={handleBackToWelcome} onSaveEntry={handleSaveEntry} />
       )}
+      {currentPage === 'loading' && <LoadingPage onBack={handleBackToDiary} />}
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
+export default App;

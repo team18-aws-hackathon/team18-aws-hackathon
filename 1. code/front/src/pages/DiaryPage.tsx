@@ -3,9 +3,10 @@ import { MobileContainer, Header, Button, TextArea } from '@/components'
 
 interface DiaryPageProps {
   onBack: () => void
+  onSaveEntry: () => void
 }
 
-export const DiaryPage = ({ onBack }: DiaryPageProps) => {
+export const DiaryPage = ({ onBack, onSaveEntry }: DiaryPageProps) => {
   const [diaryText, setDiaryText] = useState('')
 
   return (
@@ -42,7 +43,7 @@ export const DiaryPage = ({ onBack }: DiaryPageProps) => {
         </div>
 
         {/* Save Button */}
-        <Button fullWidth>
+        <Button fullWidth onClick={onSaveEntry}>
           Save Entry
         </Button>
       </div>
