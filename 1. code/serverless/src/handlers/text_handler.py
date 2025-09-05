@@ -180,10 +180,11 @@ def get_quality_based_prompt(content, user_type, quality_level):
 "{content}"
 
 이 일기를 읽고 쿼카(quokka)가 친한 친구처럼 따뜻하고 친근한 반말로 칭찬해줘.
-- 50자 이내로 작성
+- 40자에서 50자 이내로 작성
 - 이모지 1-2개 포함  
 - 친구같이 편안하고 따뜻한 반말 톤
 - "~야", "~네", "~구나" 같은 친근한 말투 사용
+- 문장이 중간에 끊어지지 않도록 완전한 문장으로 마무리해줘
 """
 
     # 품질별 추가 지침
@@ -215,7 +216,7 @@ def generate_compliment(content, user_type, quality_level="medium"):
                 }
             ],
             "inferenceConfig": {
-                "max_new_tokens": 200,
+                "max_new_tokens": 200,  # 한글 150자 + 충분한 여유분으로 잘림 방지
                 "temperature": 0.7,
                 "top_p": 0.9
             }
