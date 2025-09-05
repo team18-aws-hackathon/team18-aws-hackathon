@@ -1,10 +1,19 @@
+import { useEffect } from 'react';
 import { MobileContainer, Header } from '@/components';
 
 interface LoadingPageProps {
   onBack: () => void;
+  onComplete: () => void;
 }
 
-export const LoadingPage = ({ onBack }: LoadingPageProps) => {
+export const LoadingPage = ({ onBack, onComplete }: LoadingPageProps) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onComplete();
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [onComplete]);
   return (
     <MobileContainer>
       {/* 임시 헤더, 삭제 예정 */}
