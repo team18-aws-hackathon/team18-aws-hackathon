@@ -1,6 +1,7 @@
 # Git Commit Message Rules
 
 ## Format Structure
+
 ```
 <type>(<scope>): <description>
 
@@ -10,6 +11,7 @@
 ```
 
 ## Types (Required)
+
 - `feat`: new feature
 - `fix`: bug fix
 - `docs`: documentation only
@@ -23,11 +25,13 @@
 - `revert`: reverting previous commit
 
 ## Scope (Optional)
+
 - Component, file, or feature area affected
 - Use kebab-case: `user-auth`, `payment-api`
 - Omit if change affects multiple areas
 
 ## Description Rules
+
 - Use imperative mood: "add" not "added" or "adds"
 - No capitalization of first letter
 - No period at end
@@ -35,17 +39,20 @@
 - Be specific and actionable
 
 ## Body Guidelines
+
 - Wrap at 72 characters
 - Explain what and why, not how
 - Separate from description with blank line
 - Use bullet points for multiple changes
 
 ## Footer Format
+
 - `BREAKING CHANGE:` for breaking changes
 - `Closes #123` for issue references
 - `Co-authored-by: Name <email>`
 
 ## Examples
+
 ```
 feat(auth): add OAuth2 Google login
 
@@ -59,9 +66,11 @@ BREAKING CHANGE: remove deprecated getUserData() method
 ```
 
 ## Workflow Integration
+
 **ALWAYS write a commit message after completing any development task, feature, or bug fix.**
 
 ## Validation Checklist
+
 - [ ] Type is from approved list
 - [ ] Description under 50 chars
 - [ ] Imperative mood used

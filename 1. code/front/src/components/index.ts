@@ -1,8 +1,8 @@
 // UI Components
-export * from './ui'
+export * from './ui';
 
-// Layout Components  
-export * from './layout'
+// Layout Components
+export * from './layout';
 
 // Form Components
-export * from './forms'
+export * from './forms';
