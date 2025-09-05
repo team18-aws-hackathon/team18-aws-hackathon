@@ -8,8 +8,6 @@ from botocore.exceptions import ClientError
 bedrock_client = boto3.client('bedrock-runtime')
 s3_client = boto3.client('s3')
 
-S3_BUCKET = os.environ.get('S3_BUCKET')
-
 def handle_generate_text(event, headers):
     """
     칭찬 텍스트 생성 API 핸들러
@@ -42,8 +40,13 @@ def handle_generate_text(event, headers):
         # Bedrock으로 칭찬 메시지 생성
         compliment = generate_compliment(content, user_type)
         
-        # S3에 일기 데이터 저장
-        save_diary_data(diary_id, content, user_type, compliment)
+        # S3에 일기 데이터 저장 (로컬 환경에서는 스킵)
+        if os.environ.get('AWS_SAM_LOCAL') == 'true':
+            print(f"로컬 환경 - S3 저장 스킵: {diary_id}")
+        else:
+            bucket_name = os.environ.get('S3_BUCKET')
+            if bucket_name and bucket_name != 'ContentBucket':
+                save_diary_data(bucket_name, diary_id, content, user_type, compliment)
         
         return {
             'statusCode': 200,
@@ -88,27 +91,36 @@ def generate_compliment(content, user_type):
 """
         
         request_body = {
-            "inputText": prompt,
-            "textGenerationConfig": {
-                "maxTokenCount": 200,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "text": prompt
+                        }
+                    ]
+                }
+            ],
+            "inferenceConfig": {
+                "max_new_tokens": 200,
                 "temperature": 0.7,
-                "topP": 0.9
+                "top_p": 0.9
             }
         }
         
         response = bedrock_client.invoke_model(
-            modelId='amazon.titan-text-premier-v1:0',
+            modelId='amazon.nova-pro-v1:0',
             body=json.dumps(request_body),
             contentType='application/json'
         )
         
         response_body = json.loads(response['body'].read())
-        return response_body['results'][0]['outputText'].strip()
+        return response_body['output']['message']['content'][0]['text'].strip()
         
     except ClientError as e:
         raise Exception(f"Bedrock API error: {e}")
 
-def save_diary_data(diary_id, content, user_type, compliment):
+def save_diary_data(bucket_name, diary_id, content, user_type, compliment):
     """
     일기 데이터를 S3에 저장
     """
@@ -122,7 +134,7 @@ def save_diary_data(diary_id, content, user_type, compliment):
         }
         
         s3_client.put_object(
-            Bucket=S3_BUCKET,
+            Bucket=bucket_name,
             Key=f"diaries/{diary_id}.json",
             Body=json.dumps(data, ensure_ascii=False, indent=2),
             ContentType='application/json'
