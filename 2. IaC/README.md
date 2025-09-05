@@ -9,11 +9,12 @@ Frontend: CloudFront → S3(* 정적 웹사이트)
 Backend: API Gateway → Lambda → Bedrock → S3(* 파일 저장)
 ```
 
-## 현재 구성 (Foundation Layer)
+## 현재 구성 (Foundation + Storage Layer)
 
 ### 리소스
 - **S3 버킷 (Frontend)**: 정적 웹사이트 호스팅용
 - **S3 버킷 (Backend)**: Bedrock 생성 파일 저장용
+- **CloudFront**: CDN 배포, HTTPS 리다이렉트, 캐싱 설정
 - **IAM 역할**: Lambda 실행 역할 (Bedrock, S3 접근 권한 포함)
 
 ### 파일 구조
@@ -80,11 +81,10 @@ terraform apply destroy.tfplan
 
 ## 다음 단계 (예정)
 
-1. **Storage Layer**: CloudFront 배포, S3 정책 설정
-2. **Compute Layer**: Lambda 함수, API Gateway 설정
-3. **AI Layer**: Bedrock 모델 연동
-4. **Security Layer**: WAF, 추가 보안 정책
-5. **Monitoring Layer**: CloudWatch, 로깅 설정
+1. **Compute Layer**: Lambda 함수, API Gateway 설정
+2. **AI Layer**: Bedrock 모델 연동
+3. **Security Layer**: WAF, 추가 보안 정책
+4. **Monitoring Layer**: CloudWatch, 로깅 설정
 
 ## 주의사항
 
@@ -112,5 +112,7 @@ terraform apply destroy.tfplan
 | `frontend_bucket_name` | 프론트엔드 S3 버킷명 |
 | `frontend_bucket_website_endpoint` | 프론트엔드 웹사이트 엔드포인트 |
 | `backend_bucket_name` | 백엔드 S3 버킷명 |
+| `cloudfront_distribution_id` | CloudFront 배포 ID |
+| `cloudfront_domain_name` | CloudFront 도메인명 (CDN URL) |
 | `lambda_role_arn` | Lambda 실행 역할 ARN |
 | `lambda_role_name` | Lambda 실행 역할명 |
