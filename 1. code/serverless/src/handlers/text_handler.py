@@ -170,30 +170,31 @@ def get_quality_based_prompt(content, user_type, quality_level):
     
     # 성격 유형별 기본 설정
     personality_prompt = {
-        't': "논리적이고 분석적인 성향을 가진 사용자에게 적합한",
-        'f': "감정적이고 공감적인 성향을 가진 사용자에게 적합한"
+        't': "논리적이고 분석적인 성향을 가진 친구에게 적합한",
+        'f': "감정적이고 공감적인 성향을 가진 친구에게 적합한"
     }
     
     base_instruction = f"""
-다음은 {personality_prompt[user_type]} 사용자가 작성한 일기입니다:
+다음은 {personality_prompt[user_type]} 친구가 작성한 일기야:
 
 "{content}"
 
-이 일기를 읽고 쿼카(quokka)의 따뜻하고 긍정적인 목소리로 칭찬 메시지를 작성해주세요.
+이 일기를 읽고 쿼카(quokka)가 친한 친구처럼 따뜻하고 친근한 반말로 칭찬해줘.
 - 50자 이내로 작성
-- 이모지 1-2개 포함
-- 따뜻하고 격려하는 톤
+- 이모지 1-2개 포함  
+- 친구같이 편안하고 따뜻한 반말 톤
+- "~야", "~네", "~구나" 같은 친근한 말투 사용
 """
 
     # 품질별 추가 지침
     if quality_level == "high":
-        additional_instruction = "- 상세하고 구체적인 내용에 대해 깊이 있는 칭찬을 해주세요.\n- 사용자의 노력과 성찰을 구체적으로 인정해주세요."
+        additional_instruction = "- 상세하고 구체적인 내용에 대해 친구처럼 진심으로 칭찬해줘.\n- 노력하고 성찰하는 모습을 구체적으로 인정해줘."
     elif quality_level == "medium":
-        additional_instruction = "- 내용의 긍정적인 면을 찾아 격려해주세요.\n- 사용자의 감정과 경험을 공감해주세요."
+        additional_instruction = "- 내용의 좋은 면을 찾아서 친구처럼 격려해줘.\n- 감정과 경험에 공감하면서 응원해줘."
     else:  # low quality
-        additional_instruction = "- 간단한 내용이지만 일기를 쓴 노력 자체를 칭찬해주세요.\n- 작은 것에서도 의미를 찾아 격려해주세요."
+        additional_instruction = "- 간단한 내용이지만 일기 쓴 것 자체를 친구처럼 칭찬해줘.\n- 작은 것에서도 의미를 찾아서 따뜻하게 격려해줘."
     
-    return f"{base_instruction}\n{additional_instruction}\n\n칭찬 메시지:"
+    return f"{base_instruction}\n{additional_instruction}\n\n친구같은 칭찬 메시지:"
 def generate_compliment(content, user_type, quality_level="medium"):
     """
     Bedrock을 사용하여 품질 기반 칭찬 메시지 생성
