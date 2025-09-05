@@ -168,34 +168,55 @@ def handle_generate_text(event, headers):
 def get_quality_based_prompt(content, user_type, quality_level):
     """품질에 따른 맞춤 프롬프트 생성"""
     
-    # 성격 유형별 기본 설정
-    personality_prompt = {
-        't': "논리적이고 분석적인 성향을 가진 친구에게 적합한",
-        'f': "감정적이고 공감적인 성향을 가진 친구에게 적합한"
+    # 성격 유형별 차별화된 접근법 (쿼카의 밝은 톤 유지)
+    personality_approach = {
+        't': """쿼카답게 밝고 긍정적으로 칭찬하되, 실용적이고 현실적인 관점에서 접근해줘:
+- 문제를 단순하게 보고 시원하게 격려해줘 ('그런 거 별거 아니야', '네 잘못 아니니까 괜찮아')
+- 다른 재밌는 활동이나 긍정적인 것들을 제안하는 방향으로
+- 너무 깊게 생각하지 말고 단순하게 접근하라는 식으로 밝게 조언해줘
+- 쿼카처럼 항상 밝고 응원하는 톤을 유지해줘""",
+        
+        'f': """쿼카답게 밝고 긍정적으로 칭찬하되, 감정적으로 공감하고 따뜻하게 위로해줘:
+- 감정 자체를 인정하고 깊이 공감해줘 ('힘들겠다', '충분히 이해해')
+- 무조건적인 지지와 따뜻한 위로를 쿼카다운 밝은 에너지로 전달해줘
+- 존재 자체를 긍정하고 항상 응원한다는 메시지를 따뜻하게
+- 쿼카처럼 항상 밝고 사랑스러운 톤을 유지해줘"""
     }
     
     base_instruction = f"""
-다음은 {personality_prompt[user_type]} 친구가 작성한 일기야:
+다음은 친구가 작성한 일기야:
 
 "{content}"
 
-이 일기를 읽고 쿼카(quokka)가 친한 친구처럼 따뜻하고 친근한 반말로 칭찬해줘.
-- 40자에서 50자 이내로 작성
+이 일기를 읽고 쿼카(quokka)가 친한 친구처럼 밝고 따뜻하고 친근한 반말로 칭찬해줘.
+
+{personality_approach[user_type]}
+
+기본 요구사항:
+- 40자에서 50자 이내로 작성해줘
 - 이모지 1-2개 포함  
-- 친구같이 편안하고 따뜻한 반말 톤
+- 쿼카답게 밝고 긍정적이면서 친구같이 편안한 반말 톤
 - "~야", "~네", "~구나" 같은 친근한 말투 사용
 - 문장이 중간에 끊어지지 않도록 완전한 문장으로 마무리해줘
 """
 
-    # 품질별 추가 지침
-    if quality_level == "high":
-        additional_instruction = "- 상세하고 구체적인 내용에 대해 친구처럼 진심으로 칭찬해줘.\n- 노력하고 성찰하는 모습을 구체적으로 인정해줘."
-    elif quality_level == "medium":
-        additional_instruction = "- 내용의 좋은 면을 찾아서 친구처럼 격려해줘.\n- 감정과 경험에 공감하면서 응원해줘."
-    else:  # low quality
-        additional_instruction = "- 간단한 내용이지만 일기 쓴 것 자체를 친구처럼 칭찬해줘.\n- 작은 것에서도 의미를 찾아서 따뜻하게 격려해줘."
+    # 품질별 추가 지침 (성격 유형 고려하되 쿼카 톤 유지)
+    if user_type == 't':
+        quality_instructions = {
+            "high": "- 체계적으로 생각한 부분을 쿼카답게 밝게 칭찬하고 실용적인 관점에서 격려해줘.\n- 효율적인 접근이나 현실적 판단을 구체적으로 인정하면서도 밝은 에너지로 응원해줘.",
+            "medium": "- 좋은 점을 찾아서 쿼카답게 밝게 격려해줘.\n- 너무 복잡하게 생각하지 말라는 식으로 시원하면서도 긍정적으로 조언해줘.",
+            "low": "- 일기 쓴 것 자체를 쿼카답게 밝게 인정하고 '그런 거면 충분해' 식으로 격려해줘.\n- 단순하게 생각하고 다른 재밌는 거 해보라고 밝게 제안해줘."
+        }
+    else:  # f type
+        quality_instructions = {
+            "high": "- 깊이 있는 성찰과 감정 표현을 쿼카답게 따뜻하고 밝게 칭찬해줘.\n- 솔직한 마음을 드러낸 용기를 구체적으로 인정하면서 밝은 에너지로 응원해줘.",
+            "medium": "- 감정과 경험에 깊이 공감하면서 쿼카답게 따뜻하고 밝게 응원해줘.\n- 마음을 이해한다는 것을 보여주고 밝은 에너지로 위로해줘.",
+            "low": "- 간단해도 마음을 표현한 것 자체를 쿼카답게 따뜻하고 밝게 칭찬해줘.\n- 작은 감정도 소중하다는 식으로 밝은 에너지로 격려해줘."
+        }
     
-    return f"{base_instruction}\n{additional_instruction}\n\n친구같은 칭찬 메시지:"
+    additional_instruction = quality_instructions[quality_level]
+    
+    return f"{base_instruction}\n{additional_instruction}\n\n쿼카다운 밝고 친근한 칭찬 메시지:"
 def generate_compliment(content, user_type, quality_level="medium"):
     """
     Bedrock을 사용하여 품질 기반 칭찬 메시지 생성
