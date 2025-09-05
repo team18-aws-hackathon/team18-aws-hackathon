@@ -69,7 +69,7 @@ def generate_quokka_image(compliment, diary_id=None):
         - Pixel art style with kawaii aesthetic
         - Show only ONE single quokka (not multiple)
         - FULL BODY view showing the complete quokka from head to feet
-        - Pose direction: either front-facing OR turned 45 degrees to the left
+        - Pose direction: front-facing
         - Soft pastel color palette that reflects the compliment's emotion
         - Clean, simple background
         - High quality, detailed pixel art illustration
@@ -137,7 +137,6 @@ def remove_background(image_data):
         return bg_removed_data
         
     except ClientError as e:
-        print(f"Background removal error: {e}")
         # 배경 제거 실패 시 원본 이미지 반환
         return image_data
 
@@ -166,5 +165,4 @@ def upload_image_to_s3(diary_id, image_data):
         return presigned_url
         
     except ClientError as e:
-        print(f"S3 upload error: {e}")
         raise Exception(f"S3 upload error: {e}")
