@@ -4,7 +4,7 @@ import base64
 import os
 from botocore.exceptions import ClientError
 
-bedrock_client = boto3.client('bedrock-runtime')
+bedrock_client = boto3.client('bedrock-runtime', region_name='us-east-1')
 s3_client = boto3.client('s3')
 
 S3_BUCKET = os.environ.get('S3_BUCKET')
@@ -35,10 +35,13 @@ def handle_generate_image(event, headers):
             }
         
         # Bedrock으로 이미지 생성
-        image_data = generate_quokka_image(compliment)
+        image_data = generate_quokka_image(compliment, diary_id)
+        
+        # 배경 제거
+        bg_removed_image = remove_background(image_data)
         
         # S3에 이미지 업로드
-        image_url = upload_image_to_s3(diary_id, image_data)
+        image_url = upload_image_to_s3(diary_id, bg_removed_image)
         
         return {
             'statusCode': 200,
@@ -56,38 +59,40 @@ def handle_generate_image(event, headers):
             'body': json.dumps({'error': 'Internal server error'})
         }
 
-def generate_quokka_image(compliment):
+def generate_quokka_image(compliment, diary_id=None):
     """
-    Bedrock Titan Image Generator를 사용하여 쿼카 이미지 생성
+    Bedrock Nova Image Generator를 사용하여 쿼카 이미지 생성
     """
     try:
         prompt = f"""
-A cute, friendly quokka character saying: "{compliment}"
-- Cartoon style, kawaii aesthetic
-- Warm, encouraging expression
-- Pastel colors
-- Simple background
-- Speech bubble with the compliment text
-- High quality, detailed illustration
-"""
+        A cute quokka character expressing: "{compliment}". Create unique expression and pose that match this specific compliment:
+        - Pixel art style with kawaii aesthetic
+        - Show only ONE single quokka (not multiple)
+        - FULL BODY view showing the complete quokka from head to feet
+        - Pose direction: either front-facing OR turned 45 degrees to the left
+        - Soft pastel color palette that reflects the compliment's emotion
+        - Clean, simple background
+        - High quality, detailed pixel art illustration
+        - Make quokka as UNIQUE and DIFFERENT as you can imagine
+        """
         
         request_body = {
             "taskType": "TEXT_IMAGE",
             "textToImageParams": {
                 "text": prompt,
-                "negativeText": "dark, scary, aggressive, realistic, photo"
+                "negativeText": "character sheet format, multiple quokkas, 2quokkas, text, watermark, text box, dark, shadow, background-color, scary, aggressive, realistic, photo, extra limbs, deformed, low quality",
             },
             "imageGenerationConfig": {
                 "numberOfImages": 1,
                 "height": 512,
                 "width": 512,
                 "cfgScale": 8.0,
-                "seed": 42
+                "seed": hash(diary_id) % 1000000 if diary_id else 42
             }
         }
         
         response = bedrock_client.invoke_model(
-            modelId='amazon.titan-image-generator-v1',
+            modelId='amazon.nova-canvas-v1:0',
             body=json.dumps(request_body),
             contentType='application/json'
         )
@@ -99,6 +104,42 @@ A cute, friendly quokka character saying: "{compliment}"
         
     except ClientError as e:
         raise Exception(f"Bedrock image generation error: {e}")
+
+def remove_background(image_data):
+    """
+    Amazon Nova Canvas를 사용하여 이미지 배경 제거
+    """
+    try:
+        # 이미지를 base64로 인코딩
+        image_base64 = base64.b64encode(image_data).decode('utf-8')
+        
+        request_body = {
+            "taskType": "BACKGROUND_REMOVAL",
+            "backgroundRemovalParams": {
+                "image": image_base64
+            },
+            "imageGenerationConfig": {
+                "numberOfImages": 1,
+                "height": 512,
+                "width": 512
+            }
+        }
+        
+        response = bedrock_client.invoke_model(
+            modelId='amazon.nova-canvas-v1:0',
+            body=json.dumps(request_body),
+            contentType='application/json'
+        )
+        
+        response_body = json.loads(response['body'].read())
+        bg_removed_data = base64.b64decode(response_body['images'][0])
+        
+        return bg_removed_data
+        
+    except ClientError as e:
+        print(f"Background removal error: {e}")
+        # 배경 제거 실패 시 원본 이미지 반환
+        return image_data
 
 def upload_image_to_s3(diary_id, image_data):
     """
@@ -125,4 +166,5 @@ def upload_image_to_s3(diary_id, image_data):
         return presigned_url
         
     except ClientError as e:
+        print(f"S3 upload error: {e}")
         raise Exception(f"S3 upload error: {e}")
