@@ -1,0 +1,8 @@
+{
+  "httpMethod": "POST",
+  "path": "/process",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"prompt\": \"안녕하세요, AWS Bedrock 테스트입니다.\", \"model_id\": \"anthropic.claude-3-sonnet-20240229-v1:0\"}"
+}
