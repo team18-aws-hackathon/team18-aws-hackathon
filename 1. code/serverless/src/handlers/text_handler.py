@@ -2,35 +2,78 @@ import json
 import boto3
 import uuid
 import os
+import re
+import html
 from datetime import datetime
 from botocore.exceptions import ClientError
 
 bedrock_client = boto3.client('bedrock-runtime')
 s3_client = boto3.client('s3')
 
+# 최적화된 패턴들
+PHONE_PATTERN = re.compile(r'01[0-9][-\s]?\d{3,4}[-\s]?\d{4}')
+EMAIL_PATTERN = re.compile(r'\S+@\S+\.\S+')
+HTML_TAG_PATTERN = re.compile(r'<[^>]*?>')
+WHITESPACE_PATTERN = re.compile(r'\s+')
+
+def validate_input(user_type, content):
+    """입력 검증 함수"""
+    if not isinstance(user_type, str) or not isinstance(content, str):
+        return "입력값은 문자열이어야 합니다", None
+
+    if not user_type or user_type.lower() not in ['t', 'f']:
+        return "사용자 타입은 't' 또는 'f'여야 합니다", None
+
+    # 안전한 HTML 처리
+    try:
+        content_clean = html.unescape(content)
+    except Exception:
+        content_clean = content
+
+    content_clean = WHITESPACE_PATTERN.sub(' ', HTML_TAG_PATTERN.sub('', content_clean)).strip()
+
+    # 길이 검증
+    if len(content_clean.replace(' ', '')) < 10:
+        return "일기 내용은 공백을 제외하고 최소 10자 이상이어야 합니다", None
+
+    if len(content_clean) > 1000:
+        return "일기 내용은 최대 1000자까지 입력 가능합니다", None
+
+    # 의미있는 내용 검증
+    if not re.search(r'[가-힣a-zA-Z]', content_clean):
+        return "의미있는 내용을 입력해주세요 (한글 또는 영문 포함)", None
+
+    # 개인정보 체크
+    if PHONE_PATTERN.search(content_clean) or EMAIL_PATTERN.search(content_clean):
+        return "개인정보는 입력하지 말아주세요", None
+
+    return None, content_clean
+
 def handle_generate_text(event, headers):
     """
     칭찬 텍스트 생성 API 핸들러
     """
     try:
-        # 요청 본문 파싱
-        body = json.loads(event.get('body', '{}'))
-        user_type = body.get('type', '').lower()
+        # JSON 파싱 예외 처리
+        try:
+            body = json.loads(event.get('body', '{}'))
+        except json.JSONDecodeError:
+            return {
+                'statusCode': 400,
+                'headers': headers,
+                'body': json.dumps({'error': '잘못된 JSON 형식입니다'})
+            }
+        
+        user_type = body.get('type', '')
         content = body.get('content', '')
         
         # 입력 검증
-        if not user_type or user_type not in ['t', 'f']:
+        error_msg, cleaned_content = validate_input(user_type, content)
+        if error_msg:
             return {
                 'statusCode': 400,
                 'headers': headers,
-                'body': json.dumps({'error': 'Invalid type. Must be "t" or "f"'})
-            }
-        
-        if not content:
-            return {
-                'statusCode': 400,
-                'headers': headers,
-                'body': json.dumps({'error': 'content is required'})
+                'body': json.dumps({'error': error_msg})
             }
         
         # diary_id 생성
@@ -38,7 +81,7 @@ def handle_generate_text(event, headers):
         diary_id = f"diary-{timestamp}-{str(uuid.uuid4())[:3]}"
         
         # Bedrock으로 칭찬 메시지 생성
-        compliment = generate_compliment(content, user_type)
+        compliment = generate_compliment(cleaned_content, user_type.lower())
         
         # S3에 일기 데이터 저장 (로컬 환경에서는 스킵)
         if os.environ.get('AWS_SAM_LOCAL') == 'true':
@@ -46,7 +89,7 @@ def handle_generate_text(event, headers):
         else:
             bucket_name = os.environ.get('S3_BUCKET')
             if bucket_name and bucket_name != 'ContentBucket':
-                save_diary_data(bucket_name, diary_id, content, user_type, compliment)
+                save_diary_data(bucket_name, diary_id, cleaned_content, user_type.lower(), compliment)
         
         return {
             'statusCode': 200,
