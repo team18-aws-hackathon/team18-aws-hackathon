@@ -3,3 +3,7 @@
 aws_region = "us-east-1"
 phase      = "dev"
 prefix     = "qqq"
+
+# Lambda Configuration
+lambda_memory_size = 1024
+lambda_timeout     = 60
