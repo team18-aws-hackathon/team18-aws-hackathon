@@ -28,18 +28,30 @@ Resources:
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
 
-  # Lambda Function
-  BedrockProcessorFunction:
+  # Lambda Functions
+  QuokkaFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
       Handler: app.lambda_handler
       Events:
-        ProcessRequest:
+        GenerateText:
           Type: Api
           Properties:
             RestApiId: !Ref BedrockApi
-            Path: /process
+            Path: /generate/text
+            Method: post
+        GenerateImage:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BedrockApi
+            Path: /generate/image
+            Method: post
+        GenerateVoice:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BedrockApi
+            Path: /generate/voice
             Method: post
       Policies:
         - S3WritePolicy:
@@ -49,6 +61,7 @@ Resources:
             Action:
               - bedrock:InvokeModel
               - bedrock:InvokeModelWithResponseStream
+              - polly:SynthesizeSpeech
             Resource: '*'
 
   # S3 Bucket for storing Bedrock results

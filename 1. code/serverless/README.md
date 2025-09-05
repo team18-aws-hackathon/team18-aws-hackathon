@@ -67,21 +67,32 @@ sam local start-api --env-vars env.json
 #### Lambda 함수 직접 테스트
 ```bash
 # 테스트 이벤트로 함수 실행
-sam local invoke BedrockProcessorFunction --event events/test-event.json
+sam local invoke QuokkaFunction --event events/test-text.json
 
 # 환경 변수와 함께 실행
-sam local invoke BedrockProcessorFunction --event events/test-event.json --env-vars env.json
+sam local invoke QuokkaFunction --event events/test-text.json --env-vars env.json
 
 # 디버그 모드로 실행
-sam local invoke BedrockProcessorFunction --event events/test-event.json --debug
+sam local invoke QuokkaFunction --event events/test-text.json --debug
 ```
 
 #### 로컬 API 테스트
 ```bash
 # curl을 사용한 API 테스트
-curl -X POST http://localhost:3000/process \
+# 텍스트 생성 API
+curl -X POST http://localhost:3000/generate/text \
   -H "Content-Type: application/json" \
-  -d '{"prompt": "안녕하세요, 테스트입니다.", "model_id": "anthropic.claude-3-sonnet-20240229-v1:0"}'
+  -d '{"type": "f", "content": "오늘은 조금 힘들었어..."}
+
+# 이미지 생성 API
+curl -X POST http://localhost:3000/generate/image \
+  -H "Content-Type: application/json" \
+  -d '{"diary_id": "diary-20240901-001", "compliment": "감정을 이해하는 당신은 정말 멋져요"}
+
+# 음성 생성 API
+curl -X POST http://localhost:3000/generate/voice \
+  -H "Content-Type: application/json" \
+  -d '{"diary_id": "diary-20240901-001", "compliment": "감정을 이해하는 당신은 정말 멋져요"}'
 ```
 
 ### 5. 환경 변수 설정 (선택사항)
@@ -99,33 +110,62 @@ curl -X POST http://localhost:3000/process \
 ### 6. 로그 확인
 ```bash
 # 실시간 로그 확인
-sam logs -n BedrockProcessorFunction --stack-name bedrock-serverless-backend --tail
+sam logs -n QuokkaFunction --stack-name bedrock-serverless-backend --tail
 ```
 
 
 
 ## API 사용법
 
-### POST /process
-
-Bedrock 모델에 프롬프트를 전송하고 결과를 S3에 저장합니다.
+### 1. POST /generate/text - 칭찬 텍스트 생성
 
 **요청:**
 ```json
 {
-  "prompt": "안녕하세요, AWS Bedrock입니다.",
-  "model_id": "anthropic.claude-3-sonnet-20240229-v1:0"
+  "type": "f",
+  "content": "오늘은 조금 힘들었어..."
 }
 ```
 
 **응답:**
 ```json
 {
-  "message": "Success",
-  "file_key": "bedrock-results/20241201_143022_abc12345.json",
-  "presigned_url": "https://bucket.s3.amazonaws.com/...",
-  "cloudfront_url": "https://d123456789.cloudfront.net/bedrock-results/20241201_143022_abc12345.json",
-  "bedrock_response": "안녕하세요! AWS Bedrock을 통해 응답드립니다..."
+  "diary_id": "diary-20240901-001",
+  "compliment": "스스로를 다독일 줄 아는 당신, 참 따뜻해요 🌷"
+}
+```
+
+### 2. POST /generate/image - 칭찬 이미지 생성
+
+**요청:**
+```json
+{
+  "diary_id": "diary-20240901-001",
+  "compliment": "감정을 이해하는 당신은 정말 멋져요 💚"
+}
+```
+
+**응답:**
+```json
+{
+  "image_url": "https://s3.amazonaws.com/quokka/images/diary-20240901-001.png"
+}
+```
+
+### 3. POST /generate/voice - 칭찬 음성 생성
+
+**요청:**
+```json
+{
+  "diary_id": "diary-20240901-001",
+  "compliment": "감정을 이해하는 당신은 정말 멋져요"
+}
+```
+
+**응답:**
+```json
+{
+  "voice_url": "https://s3.amazonaws.com/quokka/voices/diary-20240901-001.mp3"
 }
 ```
 
@@ -153,5 +193,5 @@ Bedrock 모델에 프롬프트를 전송하고 결과를 S3에 저장합니다.
 sam local start-api --debug
 
 # Lambda 함수 환경 변수 확인
-sam local invoke BedrockProcessorFunction --event events/test-event.json --debug
+sam local invoke QuokkaFunction --event events/test-text.json --debug
 ```

@@ -1,0 +1,8 @@
+{
+  "httpMethod": "POST",
+  "path": "/generate/voice",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"diary_id\": \"diary-20240901-001\", \"compliment\": \"감정을 이해하는 당신은 정말 멋져요\"}"
+}
