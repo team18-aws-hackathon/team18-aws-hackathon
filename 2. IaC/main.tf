@@ -524,3 +524,13 @@ resource "aws_api_gateway_stage" "api" {
     Name = "${var.phase}-${var.prefix}-api-stage"
   }
 }
+
+# CloudWatch Log Group for Lambda (디버깅용)
+resource "aws_cloudwatch_log_group" "lambda_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.api.function_name}"
+  retention_in_days = 7 # MVP용 짧은 보존 기간
+
+  tags = {
+    Name = "${var.phase}-${var.prefix}-lambda-logs"
+  }
+}
