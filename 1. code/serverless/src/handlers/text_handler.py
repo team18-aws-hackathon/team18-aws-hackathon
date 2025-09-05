@@ -10,44 +10,88 @@ from botocore.exceptions import ClientError
 bedrock_client = boto3.client('bedrock-runtime')
 s3_client = boto3.client('s3')
 
-# 최적화된 패턴들
-PHONE_PATTERN = re.compile(r'01[0-9][-\s]?\d{3,4}[-\s]?\d{4}')
-EMAIL_PATTERN = re.compile(r'\S+@\S+\.\S+')
-HTML_TAG_PATTERN = re.compile(r'<[^>]*?>')
-WHITESPACE_PATTERN = re.compile(r'\s+')
+# 간단하고 안전한 스팸 패턴
+SIMPLE_SPAM_CHECKS = ['ㅋㅋㅋㅋㅋ', '!!!!!!', '??????', 'ㅎㅎㅎㅎㅎ']
+
+def analyze_content_quality(content):
+    """최적화된 안전한 품질 분석"""
+    
+    # 1. 기본 검증
+    if not content or not isinstance(content, str):
+        return "error", "잘못된 입력"
+    
+    content_clean = content.strip()
+    if not content_clean:
+        return "empty", "빈 내용"
+    
+    try:
+        # 2. 간단한 문자 수 계산 (정규식 없이)
+        char_count = 0
+        for char in content_clean:
+            if ('가' <= char <= '힣') or char.isalnum():
+                char_count += 1
+        
+        # 3. 단순 문자열 스팸 검사
+        for spam_pattern in SIMPLE_SPAM_CHECKS:
+            if spam_pattern in content_clean:
+                return "spam", "무의미한 반복 패턴 감지"
+        
+        # 4. 길이 기반 등급
+        if char_count > 80:
+            return "high", "상세한 내용"
+        elif char_count > 30:
+            return "medium", "적당한 내용"
+        elif char_count < 10:
+            return "low", "내용이 너무 짧습니다"
+        else:
+            return "medium", "적당한 내용"
+            
+    except Exception as e:
+        # 최종 안전망 - 기본값 반환
+        return "medium", "기본 품질"
 
 def validate_input(user_type, content):
-    """입력 검증 함수"""
+    """기본 입력 검증 함수"""
     if not isinstance(user_type, str) or not isinstance(content, str):
-        return "입력값은 문자열이어야 합니다", None
+        return "입력값은 문자열이어야 합니다", None, None
 
     if not user_type or user_type.lower() not in ['t', 'f']:
-        return "사용자 타입은 't' 또는 'f'여야 합니다", None
+        return "사용자 타입은 't' 또는 'f'여야 합니다", None, None
 
-    # 안전한 HTML 처리
+    # 안전한 HTML 처리 (간단한 태그 제거)
     try:
         content_clean = html.unescape(content)
+        content_clean = re.sub(r'<[^>]*?>', '', content_clean)
+        content_clean = re.sub(r'\s+', ' ', content_clean).strip()
     except Exception:
-        content_clean = content
+        content_clean = content.strip()
 
-    content_clean = WHITESPACE_PATTERN.sub(' ', HTML_TAG_PATTERN.sub('', content_clean)).strip()
-
-    # 길이 검증
+    # 기본 길이 검증
     if len(content_clean.replace(' ', '')) < 10:
-        return "일기 내용은 공백을 제외하고 최소 10자 이상이어야 합니다", None
+        return "일기 내용은 공백을 제외하고 최소 10자 이상이어야 합니다", None, None
 
     if len(content_clean) > 1000:
-        return "일기 내용은 최대 1000자까지 입력 가능합니다", None
+        return "일기 내용은 최대 1000자까지 입력 가능합니다", None, None
 
     # 의미있는 내용 검증
     if not re.search(r'[가-힣a-zA-Z]', content_clean):
-        return "의미있는 내용을 입력해주세요 (한글 또는 영문 포함)", None
+        return "의미있는 내용을 입력해주세요 (한글 또는 영문 포함)", None, None
 
-    # 개인정보 체크
-    if PHONE_PATTERN.search(content_clean) or EMAIL_PATTERN.search(content_clean):
-        return "개인정보는 입력하지 말아주세요", None
+    # 간단한 개인정보 체크
+    if re.search(r'01[0-9][-\s]?\d{3,4}[-\s]?\d{4}', content_clean):
+        return "개인정보 보호를 위해 전화번호는 입력하지 말아주세요", None, None
+    
+    if re.search(r'\S+@\S+\.\S+', content_clean):
+        return "개인정보 보호를 위해 이메일은 입력하지 말아주세요", None, None
 
-    return None, content_clean
+    # 품질 분석 수행
+    quality_level, quality_reason = analyze_content_quality(content_clean)
+    
+    # 스팸으로 판정된 경우 거부
+    if quality_level == "spam":
+        return quality_reason, None, None
+
+    return None, content_clean, quality_level
 
 def handle_generate_text(event, headers):
     """
@@ -67,8 +111,14 @@ def handle_generate_text(event, headers):
         user_type = body.get('type', '')
         content = body.get('content', '')
         
-        # 입력 검증
-        error_msg, cleaned_content = validate_input(user_type, content)
+        # 입력 검증 및 품질 분석
+        validation_result = validate_input(user_type, content)
+        if len(validation_result) == 3:
+            error_msg, cleaned_content, quality_level = validation_result
+        else:
+            error_msg, cleaned_content = validation_result
+            quality_level = "medium"  # 기본값
+            
         if error_msg:
             return {
                 'statusCode': 400,
@@ -80,8 +130,11 @@ def handle_generate_text(event, headers):
         timestamp = datetime.now().strftime('%Y%m%d')
         diary_id = f"diary-{timestamp}-{str(uuid.uuid4())[:3]}"
         
-        # Bedrock으로 칭찬 메시지 생성
-        compliment = generate_compliment(cleaned_content, user_type.lower())
+        # 품질 기반 Bedrock 칭찬 메시지 생성
+        compliment = generate_compliment(cleaned_content, user_type.lower(), quality_level)
+        
+        # 품질 분석 결과 로깅
+        print(f"품질 분석 결과 - diary_id: {diary_id}, quality: {quality_level}")
         
         # S3에 일기 데이터 저장 (로컬 환경에서는 스킵)
         if os.environ.get('AWS_SAM_LOCAL') == 'true':
@@ -96,7 +149,11 @@ def handle_generate_text(event, headers):
             'headers': headers,
             'body': json.dumps({
                 'diary_id': diary_id,
-                'compliment': compliment
+                'compliment': compliment,
+                'quality_analysis': {
+                    'level': quality_level,
+                    'message': f"콘텐츠 품질: {quality_level}"
+                }
             })
         }
         
@@ -108,18 +165,16 @@ def handle_generate_text(event, headers):
             'body': json.dumps({'error': 'Internal server error'})
         }
 
-def generate_compliment(content, user_type):
-    """
-    Bedrock을 사용하여 칭찬 메시지 생성
-    """
-    try:
-        # 성격 유형별 프롬프트 설정
-        personality_prompt = {
-            't': "논리적이고 분석적인 성향을 가진 사용자에게 적합한",
-            'f': "감정적이고 공감적인 성향을 가진 사용자에게 적합한"
-        }
-        
-        prompt = f"""
+def get_quality_based_prompt(content, user_type, quality_level):
+    """품질에 따른 맞춤 프롬프트 생성"""
+    
+    # 성격 유형별 기본 설정
+    personality_prompt = {
+        't': "논리적이고 분석적인 성향을 가진 사용자에게 적합한",
+        'f': "감정적이고 공감적인 성향을 가진 사용자에게 적합한"
+    }
+    
+    base_instruction = f"""
 다음은 {personality_prompt[user_type]} 사용자가 작성한 일기입니다:
 
 "{content}"
@@ -128,10 +183,24 @@ def generate_compliment(content, user_type):
 - 50자 이내로 작성
 - 이모지 1-2개 포함
 - 따뜻하고 격려하는 톤
-- 사용자의 감정과 노력을 인정하는 내용
-
-칭찬 메시지:
 """
+
+    # 품질별 추가 지침
+    if quality_level == "high":
+        additional_instruction = "- 상세하고 구체적인 내용에 대해 깊이 있는 칭찬을 해주세요.\n- 사용자의 노력과 성찰을 구체적으로 인정해주세요."
+    elif quality_level == "medium":
+        additional_instruction = "- 내용의 긍정적인 면을 찾아 격려해주세요.\n- 사용자의 감정과 경험을 공감해주세요."
+    else:  # low quality
+        additional_instruction = "- 간단한 내용이지만 일기를 쓴 노력 자체를 칭찬해주세요.\n- 작은 것에서도 의미를 찾아 격려해주세요."
+    
+    return f"{base_instruction}\n{additional_instruction}\n\n칭찬 메시지:"
+def generate_compliment(content, user_type, quality_level="medium"):
+    """
+    Bedrock을 사용하여 품질 기반 칭찬 메시지 생성
+    """
+    try:
+        # 품질에 따른 맞춤 프롬프트 생성
+        prompt = get_quality_based_prompt(content, user_type, quality_level)
         
         request_body = {
             "messages": [
