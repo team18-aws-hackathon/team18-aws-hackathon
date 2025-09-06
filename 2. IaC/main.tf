@@ -232,7 +232,7 @@ resource "aws_lambda_function" "api" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "${var.phase}-${var.prefix}-api"
   role             = aws_iam_role.lambda_role.arn
-  handler          = "lambda_function.lambda_handler"
+  handler          = "app.lambda_handler"
   runtime          = "python3.11"
   memory_size      = var.lambda_memory_size
   timeout          = var.lambda_timeout
