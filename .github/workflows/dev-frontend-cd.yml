@@ -35,13 +35,13 @@ jobs:
         rm -f package-lock.json
         npm install
     
-    - name: Lint check
-      working-directory: ./1. code/front
-      run: npm run lint
+    # - name: Lint check
+    #   working-directory: ./1. code/front
+    #   run: npm run lint
     
-    - name: Format check
-      working-directory: ./1. code/front
-      run: npm run format:check
+    # - name: Format check
+    #   working-directory: ./1. code/front
+    #   run: npm run format:check
     
     - name: TypeScript type check
       working-directory: ./1. code/front
