@@ -8,6 +8,7 @@ function App() {
     'welcome' | 'diary' | 'loading' | 'response'
   >('welcome');
 
+
   const handleWelcomeComplete = () => {
     setCurrentPage('diary');
   };
@@ -46,6 +47,7 @@ function App() {
       {currentPage === 'response' && (
         <QuokkaResponsePage onBack={handleBackToLoading} />
       )}
+
     </ThemeProvider>
   );
 }

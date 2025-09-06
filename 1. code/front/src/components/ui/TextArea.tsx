@@ -1,7 +1,7 @@
 interface TextAreaProps {
-  placeholder?: string
-  value?: string
-  onChange?: (value: string) => void
+  placeholder?: string;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
 export const TextArea = ({ placeholder, value, onChange }: TextAreaProps) => {
@@ -12,5 +12,5 @@ export const TextArea = ({ placeholder, value, onChange }: TextAreaProps) => {
       onChange={(e) => onChange?.(e.target.value)}
       className="w-full min-h-[400px] p-4 rounded-xl border-2 border-gray-300 text-base outline-0 resize-none font-inherit focus:border-lime-400 transition-colors duration-200"
     />
-  )
-}
+  );
+};
