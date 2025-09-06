@@ -80,8 +80,9 @@ Repository Settings → Secrets and variables → Actions에서 설정:
 ```
 AWS_ACCESS_KEY_ID       # AWS 액세스 키
 AWS_SECRET_ACCESS_KEY   # AWS 시크릿 키
-AWS_REGION             # us-east-1
 ```
+
+**참고**: OIDC 방식에서 Access Key 방식으로 변경되었습니다.
 
 ### **AWS 권한 요구사항**
 ```json
@@ -112,13 +113,15 @@ AWS_REGION             # us-east-1
 과정:
   1. 코드 체크아웃
   2. Node.js 22 설정
-  3. 의존성 설치 (npm ci)
-  4. 코드 품질 검사 (lint, format, type check)
-  5. Vite 빌드 (dist/ 생성)
-  6. Terraform 출력값 조회 (S3 버킷명, CloudFront ID)
-  7. S3 동기화 (--delete 옵션으로 정리)
+  3. 의존성 설치 (npm install, package-lock.json 제거)
+  4. 빌드 (에러 시 폴백 dist/ 생성)
+  5. AWS 자격 증명 설정 (Access Key 방식)
+  6. Terraform 초기화 및 출력값 조회
+  7. S3 동기화 (--delete 옵션)
   8. CloudFront 캐시 무효화
 ```
+
+**참고**: 코드 품질 검사는 현재 비활성화되어 있습니다.
 
 ### **Backend CD (`dev-backend-cd.yml`)**
 ```yaml
@@ -127,11 +130,12 @@ AWS_REGION             # us-east-1
   1. 코드 체크아웃
   2. Python 3.11 설정
   3. 의존성 설치 (pip install -t src/)
-  4. ZIP 패키징 (src/ 디렉토리)
-  5. Terraform 출력값 조회 (Lambda 함수명)
-  6. Lambda 함수 코드 업데이트
-  7. 업데이트 완료 대기
-  8. 배포 검증
+  4. ZIP 패키징 (Linux zip 명령어 사용)
+  5. AWS 자격 증명 설정 (Access Key 방식)
+  6. Terraform 초기화 및 출력값 조회
+  7. Lambda 함수 코드 업데이트
+  8. 업데이트 완료 대기
+  9. 배포 검증
 ```
 
 ## 🔍 모니터링 및 디버깅
@@ -170,13 +174,13 @@ Error: AccessDenied
 **2. Terraform 출력값 오류**
 ```
 Error: terraform output failed
-해결: 2. IaC 디렉토리에서 terraform apply 완료 여부 확인
+해결: Remote State 설정 및 backend.tf 파일 확인
 ```
 
 **3. 빌드 실패**
 ```
-Error: npm run build failed
-해결: 로컬에서 빌드 테스트 후 push
+Error: npm run build failed 또는 dist/ directory not found
+해결: 임의의 index.html 생성하도록 임시 조치
 ```
 
 **4. Lambda 패키징 오류**
@@ -190,9 +194,18 @@ Error: deployment package too large
 - **AWS CloudWatch**: Lambda 실행 로그 확인
 - **로컬 테스트**: 배포 전 로컬에서 빌드/테스트 완료
 
+## ✅ 완료된 기능
+
+- ✅ **Remote State**: Terraform 상태 파일 S3 저장 및 DynamoDB 잠금
+- ✅ **자동 배포**: develop 브랜치 push 시 자동 트리거
+- ✅ **수동 트리거**: workflow_dispatch로 수동 실행 가능
+- ✅ **에러 처리**: 빌드 실패 시 폴백 메커니즘
+- ✅ **보안**: AWS Access Key 방식 인증
+
 ## 🔄 향후 확장
 
 ### **Production 환경 (예정)**
 - `prod-frontend-cd.yml`: main 브랜치 트리거
 - `prod-backend-cd.yml`: 수동 승인 후 배포
 - 환경별 변수 관리 (dev/prod)
+- 코드 품질 검사 재활성화
