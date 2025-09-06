@@ -16,6 +16,9 @@ jobs:
   deploy:
     name: Deploy Frontend to AWS
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # OIDC 인증에 필요
+      contents: read    # 코드 읽기에 필요
     
     steps:
     - name: Checkout Code
