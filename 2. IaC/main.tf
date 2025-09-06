@@ -242,8 +242,8 @@ resource "aws_lambda_function" "api" {
     variables = {
       S3_BUCKET              = aws_s3_bucket.backend.bucket
       ENVIRONMENT            = var.phase
-      BEDROCK_TEXT_MODEL_ID  = "amazon.titan-text-premier-v1:0"
-      BEDROCK_IMAGE_MODEL_ID = "amazon.titan-image-generator-v1"
+      BEDROCK_TEXT_MODEL_ID  = "amazon.nova-pro-v1:0"
+      BEDROCK_IMAGE_MODEL_ID = "amazon.nova-canvas-v1:0"
     }
   }
 
