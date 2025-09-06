@@ -16,9 +16,7 @@ jobs:
   deploy:
     name: Deploy Backend to AWS Lambda
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write   # OIDC 인증에 필요
-      contents: read    # 코드 읽기에 필요
+
     
     steps:
     - name: Checkout Code
@@ -43,10 +41,11 @@ jobs:
         cd ..
         echo "📦 Deployment package created: $(ls -lh deployment.zip)"
     
-    - name: Configure AWS credentials (OIDC)
+    - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/dev-qqq-github-actions-role
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
     
     - name: Setup Terraform

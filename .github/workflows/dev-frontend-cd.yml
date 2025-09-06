@@ -16,9 +16,7 @@ jobs:
   deploy:
     name: Deploy Frontend to AWS
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write   # OIDC 인증에 필요
-      contents: read    # 코드 읽기에 필요
+
     
     steps:
     - name: Checkout Code
@@ -28,12 +26,14 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '22'
-        cache: 'npm'
-        cache-dependency-path: './1. code/front/package-lock.json'
+        # cache: 'npm'  # 캐시 비활성화
+        # cache-dependency-path: './1. code/front/package-lock.json'
     
     - name: Install dependencies
       working-directory: ./1. code/front
-      run: npm install
+      run: |
+        rm -f package-lock.json
+        npm install
     
     - name: Lint check
       working-directory: ./1. code/front
@@ -51,10 +51,11 @@ jobs:
       working-directory: ./1. code/front
       run: npm run build
     
-    - name: Configure AWS credentials (OIDC)
+    - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/dev-qqq-github-actions-role
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
     
     - name: Setup Terraform
