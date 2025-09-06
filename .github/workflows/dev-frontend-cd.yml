@@ -35,23 +35,24 @@ jobs:
         rm -f package-lock.json
         npm install
     
-    # - name: Lint check
-    #   working-directory: ./1. code/front
-    #   run: npm run lint
-    
-    # - name: Format check
-    #   working-directory: ./1. code/front
-    #   run: npm run format:check
-    
-    # - name: TypeScript type check
-    #   working-directory: ./1. code/front
-    #   run: npx tsc --noEmit
-    
     - name: Build
       working-directory: ./1. code/front
       run: |
         # TypeScript 에러 무시하고 빌드
         npm run build || echo "Build completed with warnings"
+    
+    - name: Check build output
+      working-directory: ./1. code/front
+      run: |
+        echo "Checking build output directory..."
+        ls -la
+        if [ -d "dist" ]; then
+          echo "dist/ directory exists"
+          ls -la dist/
+        else
+          echo "dist/ directory not found, checking other possible directories..."
+          find . -name "*.html" -o -name "index.html" | head -10
+        fi
     
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -79,7 +80,13 @@ jobs:
     - name: Deploy to S3
       working-directory: ./1. code/front
       run: |
-        aws s3 sync dist/ s3://${{ steps.terraform-outputs.outputs.frontend_bucket }}/ --delete
+        if [ -d "dist" ]; then
+          echo "Deploying dist/ directory to S3..."
+          aws s3 sync dist/ s3://${{ steps.terraform-outputs.outputs.frontend_bucket }}/ --delete
+        else
+          echo "Error: dist/ directory not found. Build may have failed."
+          exit 1
+        fi
     
     - name: Invalidate CloudFront
       run: |
