@@ -25,7 +25,7 @@ AI 기술과 사랑스러운 쿼카를 결합하여 감정적 지지와 인지 �
 ## 주요 기능
 
 1. Welcome Page  
-![welcome]("./3.%20demo/welcome.png")
+![welcome](./3.%20demo/welcome.png)
 
 사용자 온보딩: 사용자 이름 입력 및 개인화된 경험 제공을 위한 설정  
 Quokka Type 선택:
@@ -33,17 +33,17 @@ Quokka Type 선택:
 - T Quokka: 사고 중심적이고 논리적인 성향의 동반자
 
 2. Diary Page  
-![welcome]("https://github.com/team18-aws-hackathon/team18-aws-hackathon/main/3.%20demo/diary.png")
+![diary](./3.%20demo/diary.png)
 
 텍스트 영역에서 자신의 이야기와 감정을 자유롭게 작성하여 서버로 전송
 
 3. Loading Page  
-![loading]("https://github.com/team18-aws-hackathon/team18-aws-hackathon/blob/main/3.%20demo/loading.png")
+![loading](./3.%20demo/loading.png)
 
 사용자가 작성한 일기를 AI가 분석하는 동안 표시
 
 4. Quokka Response Page  
-![quokka response]("https://github.com/team18-aws-hackathon/team18-aws-hackathon/blob/main/3.%20demo/quokka%20response.png")
+![quokka response](./3.%20demo/quokka%20response.png)
 
 음성 응답 재생: 재생/일시정지 컨트롤  
 개인화된 Quokka 이미지: 일기 내용에 맞춰 생성되는 다양한 Quokka 캐릭터 이미지  
