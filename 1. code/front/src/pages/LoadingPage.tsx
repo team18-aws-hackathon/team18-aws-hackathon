@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { MobileContainer, Header } from '@/components';
+import diaryImage from '@/assets/diary-20240901-004.png';
 
 interface LoadingPageProps {
   onBack: () => void;
@@ -18,11 +19,15 @@ export const LoadingPage = ({ onBack, onComplete }: LoadingPageProps) => {
     <MobileContainer>
       {/* 임시 헤더, 삭제 예정 */}
       <Header title="Loading" showBack onBack={onBack} />
-      <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-r from-beige-300 to-beige-400 px-6">
+      <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-r from-rose-300 to-rose-500 px-6">
         {/* Centered Quokka Face in White Circle */}
         <div className="mb-auto mt-auto flex flex-col items-center">
           <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-6">
-            <div className="text-6xl">🐨</div>
+            <img
+              src={diaryImage}
+              alt="Quokka"
+              className="w-24 h-24 object-contain"
+            />
           </div>
 
           {/* Loading Dots */}
