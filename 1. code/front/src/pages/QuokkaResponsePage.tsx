@@ -125,7 +125,7 @@ export const QuokkaResponsePage = ({ onBack }: QuokkaResponsePageProps) => {
             <img
               src={currentImage}
               alt="Quokka"
-              className="w-48 h-48 object-contain"
+              className="w-100 h-100 object-contain"
             />
           </div>
         </div>
