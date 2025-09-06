@@ -3,29 +3,39 @@
 AWS 서버리스 아키텍처를 위한 Terraform 인프라 코드입니다.
 
 ## 🏗️ 아키텍처 개요
-
 ```
-Frontend: CloudFront → S3(* 정적 웹사이트)
-Backend: API Gateway → Lambda → Bedrock → S3(* 파일 저장)
+Frontend: 사용자 → CloudFront → S3 (정적 웹사이트)
+Backend:  사용자 → API Gateway → Lambda → Bedrock (AI)
+                                    └→ S3 (생성 데이터 저장)
+Infra:    개발자/GitHub Actions → S3 (Terraform State) ↔ DynamoDB (State Lock)
 ```
 
 ## 📦 현재 구성
-> Foundation + Storage + Compute + AI Layer
+> Foundation + Storage + Compute + AI Layer + CI/CD Pipeline
 
 ### 리소스
-- **S3 버킷 (Frontend)**: 정적 웹사이트 호스팅용
-- **S3 버킷 (Backend)**: Bedrock 생성 파일 저장용
+- **S3 버킷 (Frontend)**: 정적 웹사이트 호스팅용 (`<phase>-qqq-frontend`)
+- **S3 버킷 (Backend)**: 일기 데이터 저장용 (`<phase>-qqq-backend`)
 - **CloudFront**: CDN 배포, HTTPS 리다이렉트, 캐싱 설정
-- **Lambda 함수**: API 처리 (Python 3.11, 1GB 메모리, 60초 타임아웃)
+- **Lambda 함수**: API 처리 (`<phase>-qqq-api`, Python 3.11, 1GB 메모리, 60초 타임아웃)
 - **API Gateway**: REST API (3개 엔드포인트, CORS 설정)
+- **Amazon Bedrock**: AI 텍스트 생성 (Titan Text Premier v1:0)
 - **CloudWatch**: Lambda 로그 그룹 (디버깅용)
 - **IAM 역할**: Lambda 실행 역할 (Bedrock, S3 접근 권한)
+
+### 인프라 관리 리소스
+- **S3 버킷 (State)**: Terraform 상태 파일 저장 (`team18-terraform-state-740d78b6`)
+- **DynamoDB 테이블**: Terraform 상태 잠금 (`team18-terraform-locks`)
+- **GitHub Actions**: 자동 CI/CD 파이프라인
 
 ### 파일 구조
 ```
 ├── main.tf                 # 메인 리소스 정의
 ├── variables.tf           # 변수 정의
 ├── outputs.tf            # 출력값 정의
+├── backend.tf            # Terraform Remote State 설정
+├── backend-setup.tf      # Remote State 인프라 생성용
+├── setup-backend.md      # Remote State 설정 가이드
 ├── terraform.tfvars.example # 변수 설정 예시
 ├── .gitignore
 └── README.md
@@ -33,7 +43,8 @@ Backend: API Gateway → Lambda → Bedrock → S3(* 파일 저장)
 ## ⚠️ 주의사항
 
 - `terraform.tfvars` 파일은 민감한 정보를 포함할 수 있으므로 Git에 커밋하지 마세요
-- AWS 자격 증명이 올바르게 설정되어 있는지 확인하세요
+- GitHub Secrets에 AWS 자격 증명을 안전하게 저장하세요
+- **Remote State 설정 후에는 팀원 모두가 같은 설정을 사용해야 합니다**
 - 리소스 삭제 시 `terraform destroy` 명령어를 사용하세요
 
 
@@ -48,7 +59,19 @@ cp terraform.tfvars.example terraform.tfvars
 # aws_region, phase, prefix, lambda_memory_size, lambda_timeout 설정
 ```
 
-### 2. Terraform 초기화 및 배포
+### 2. Remote State 설정 (최초 1회만)
+```bash
+# Remote State 인프라 생성
+terraform apply
+
+# 생성된 버킷명 확인
+terraform output terraform_state_bucket
+
+# backend.tf 파일의 버킷명 업데이트 후
+terraform init -migrate-state
+```
+
+### 3. Terraform 초기화 및 배포
 ```bash
 # Terraform 초기화
 terraform init
@@ -59,12 +82,11 @@ terraform fmt && terraform validate
 # 실행 계획 확인 + 시뮬레이션 tfplan 파일 생성
 terraform plan -out=tfplan
 
-# 배포 실행
-# 직전에 생성한 tfplan 파일을 사용해 적용
+# 배포 실행 (직전에 생성한 tfplan 파일을 사용해 적용)
 terraform apply tfplan
 ```
 
-### 3. 리소스 확인
+### 4. 리소스 확인
 ```bash
 # 현재 상태 파일(terraform.tfstate)에 기록된 리소스 목록
 terraform state list
@@ -73,7 +95,7 @@ terraform state list
 terraform output
 ```
 
-### 4. API 테스트
+### 5. API 테스트
 ```bash
 # API Gateway URL 확인
 terraform output api_gateway_url
@@ -83,16 +105,13 @@ curl -X POST $(terraform output -raw api_gateway_url)/generate/text \
   -H "Content-Type: application/json" \
   -d '{"prompt": "Hello World"}'
 
-# 브라우저 개발자 도구에서 테스트
-# F12 → Console에서 실행:
-# fetch('API_URL/generate/text', {
-#   method: 'POST',
-#   headers: { 'Content-Type': 'application/json' },
-#   body: JSON.stringify({ prompt: 'Hello World' })
-# }).then(r => r.json()).then(console.log)
+# 람다 함수 배포 후
+curl -X POST $(terraform output -raw api_gateway_url)/generate/text \
+  -H "Content-Type: application/json" \
+  -d '{"type": "f", "content": "오늘 정말 좋은 하루를 보냈어요. 친구들과 함께 맛있는 음식도 먹고 즐거운 시간을 보냈습니다."}'
 ```
 
-### 5. 리소스 삭제
+### 6. 리소스 삭제
 ```bash
 # S3 버킷 비우기 (필요시)
 aws s3 rm s3://<bucket_name> --recursive
@@ -108,6 +127,23 @@ terraform apply destroy.tfplan
 - **개발 환경**: `terraform destroy`
 - **프로덕션**: `terraform plan -destroy` → 검토 → `terraform apply` (안전)
 
+## 🔄 CI/CD 파이프라인
+
+### GitHub Actions 워크플로우
+- **Frontend CD**: `1. code/front/**` 경로 변경 시 자동 배포
+- **Backend CD**: `1. code/serverless/**` 경로 변경 시 자동 배포
+
+### 필요한 GitHub Secrets
+```
+AWS_ACCESS_KEY_ID       # AWS 액세스 키
+AWS_SECRET_ACCESS_KEY   # AWS 시크릿 키
+```
+
+### 수동 배포 트리거
+```
+GitHub → Actions → 워크플로우 선택 → Run workflow
+```
+
 ## 👨‍💻 백엔드 개발자를 위한 정보
 
 ### Lambda 환경 변수
@@ -116,7 +152,16 @@ terraform apply destroy.tfplan
 - `BEDROCK_TEXT_MODEL_ID`: amazon.titan-text-premier-v1:0
 - `BEDROCK_IMAGE_MODEL_ID`: amazon.titan-image-generator-v1
 
-### 코드 배포 방법
+### 람다 함수 배포 방법
+#### 자동 배포 (권장)
+```bash
+# 코드 변경 후 develop 브랜치에 푸시
+git add .
+git commit -m "feat: update backend logic"
+git push origin develop
+# → GitHub Actions가 자동으로 Lambda 업데이트
+```
+#### 수동 배포
 ```bash
 # AWS CLI로 Lambda 코드 업데이트
 aws lambda update-function-code \
@@ -149,14 +194,6 @@ aws logs filter-log-events \
 - **로그 안 보임**: Lambda 함수를 한 번 이상 실행해야 로그 스트림 생성
 - **Timeout 에러**: Lambda 타임아웃 60초 내에 응답 필요
 
-## 🌐 API 엔드포인트
-
-| 엔드포인트 | 메서드 | 용도 | Bedrock 모델 |
-|------------|--------|------|-------------|
-| `/generate/text` | `POST` | 텍스트 생성 | amazon.titan-text-premier-v1:0 |
-| `/generate/image` | `POST` | 이미지 생성 | amazon.titan-image-generator-v1 |
-| `/generate/voice` | `POST` | 음성 생성 | 미사용 |
-
 ## 📋 변수 설명
 > terraform.tfvars.example 참고
 
@@ -187,7 +224,17 @@ aws logs filter-log-events \
 | `lambda_log_group_name` | Lambda CloudWatch 로그 그룹명 |
 | `lambda_role_arn` | Lambda 실행 역할 ARN |
 | `lambda_role_name` | Lambda 실행 역할명 |
+| `terraform_state_bucket` | Terraform 상태 S3 버킷명 |
+| `terraform_locks_table` | Terraform 잠금 DynamoDB 테이블명 |
 
+
+## ✅ 완료된 기능
+1. ✅ **완전한 서버리스 아키텍처**: S3 + CloudFront + API Gateway + Lambda + Bedrock
+2. ✅ **AI 텍스트 생성**: Amazon Bedrock Titan 모델 연동
+3. ✅ **자동 CI/CD**: GitHub Actions를 통한 자동 배포
+4. ✅ **Remote State**: 팀 협업을 위한 Terraform 상태 관리
+5. ✅ **보안**: IAM 역할 기반 권한 관리
+6. ✅ **모니터링**: CloudWatch 로그를 통한 디버깅
 
 ## 🔄 다음 단계 (예정)
-1. 백엔드 팀에서 Bedrock 연동 코드 구현
+1. production 환경 구성 (별도 브랜치 전략)
