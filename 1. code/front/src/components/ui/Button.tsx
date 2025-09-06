@@ -5,6 +5,7 @@ interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'rose';
   fullWidth?: boolean;
 }
+
 export const Button = ({
   className,
   children,
@@ -23,7 +24,7 @@ export const Button = ({
   };
 
   return (
-    <button
+    <button 
       className={`${baseClasses} ${widthClass} ${className || variantClasses[variant]}`}
       onClick={onClick}
     >

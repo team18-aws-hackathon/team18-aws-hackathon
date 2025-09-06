@@ -9,7 +9,7 @@ export const Header = ({ title, showBack, onBack, rightIcon }: HeaderProps) => {
   return (
     <div
       className={`p-5 flex items-center justify-between text-lg font-semibold ${
-        showBack ? 'bg-white text-gray-800' : 'bg-beige-500 text-white'
+        showBack ? 'bg-white text-gray-800' : 'bg-rose-500 text-white'
       }`}
     >
       {showBack && (
