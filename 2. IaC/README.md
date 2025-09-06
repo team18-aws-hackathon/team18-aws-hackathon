@@ -33,6 +33,9 @@ Infra:    개발자/GitHub Actions → S3 (Terraform State) ↔ DynamoDB (State 
 ├── main.tf                 # 메인 리소스 정의
 ├── variables.tf           # 변수 정의
 ├── outputs.tf            # 출력값 정의
+├── backend.tf            # Terraform Remote State 설정
+├── backend-setup.tf      # Remote State 인프라 생성용
+├── setup-backend.md      # Remote State 설정 가이드
 ├── terraform.tfvars.example # 변수 설정 예시
 ├── .gitignore
 └── README.md
