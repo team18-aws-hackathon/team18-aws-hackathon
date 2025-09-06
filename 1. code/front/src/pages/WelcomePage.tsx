@@ -87,7 +87,7 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
                     }}
                   />
                 }
-                label={<div className="flex">F Quokka</div>}
+                label={<div className="flex text-xl">공감하는 쿼카</div>}
                 sx={{
                   margin: 0,
                   padding: '10px',
@@ -114,7 +114,7 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
                 }
                 label={
                   <div className="flex items-center gap-2">
-                    <span>T Quokka</span>
+                    <span className="text-xl">조언하는 쿼카</span>
                   </div>
                 }
                 sx={{
@@ -134,7 +134,7 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
 
         {/* Start Button */}
         <div className="mt-auto">
-          <Button fullWidth variant='rose' onClick={onComplete}>
+          <Button fullWidth variant="rose" onClick={onComplete}>
             Start Journey
           </Button>
         </div>
