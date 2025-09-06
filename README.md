@@ -90,9 +90,9 @@ terraform destroy
 
 ### AWS 아키텍처
 #### 1. 서비스 아키턱처
-![quokka-backend-deploy](https://github.com/team18-aws-hackathon/team18-aws-hackathon/blob/1494c5d91db6ddb53e4f97ec2071558cfc0205d2/images/quokka-backend-deploy.drawio.png)
-#### 2. 백엔드 Lambda 함수 배포에 사용되는 리소스
 ![quokka-service-architecture](https://github.com/team18-aws-hackathon/team18-aws-hackathon/blob/1494c5d91db6ddb53e4f97ec2071558cfc0205d2/images/quokka-service-architecture.drawio.png)
+#### 2. 백엔드 Lambda 함수 배포에 사용되는 리소스
+![quokka-backend-deploy](https://github.com/team18-aws-hackathon/team18-aws-hackathon/blob/1494c5d91db6ddb53e4f97ec2071558cfc0205d2/images/quokka-backend-deploy.drawio.png)
 
 ## 프로젝트 기대 효과 및 예상 사용 사례
 ### 개인적 성장  
