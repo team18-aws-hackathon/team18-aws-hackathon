@@ -232,7 +232,7 @@ resource "aws_lambda_function" "api" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "${var.phase}-${var.prefix}-api"
   role             = aws_iam_role.lambda_role.arn
-  handler          = "lambda_function.lambda_handler"
+  handler          = "app.lambda_handler"
   runtime          = "python3.11"
   memory_size      = var.lambda_memory_size
   timeout          = var.lambda_timeout
@@ -240,7 +240,7 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      S3_BUCKET_NAME         = aws_s3_bucket.backend.bucket
+      S3_BUCKET              = aws_s3_bucket.backend.bucket
       ENVIRONMENT            = var.phase
       BEDROCK_TEXT_MODEL_ID  = "amazon.titan-text-premier-v1:0"
       BEDROCK_IMAGE_MODEL_ID = "amazon.titan-image-generator-v1"
@@ -533,4 +533,115 @@ resource "aws_cloudwatch_log_group" "lambda_logs" {
   tags = {
     Name = "${var.phase}-${var.prefix}-lambda-logs"
   }
+}
+
+# GitHub OIDC Provider
+resource "aws_iam_openid_connect_provider" "github" {
+  url = "https://token.actions.githubusercontent.com"
+
+  client_id_list = [
+    "sts.amazonaws.com"
+  ]
+
+  thumbprint_list = [
+    "6938fd4d98bab03faadb97b34396831e3780aea1"
+  ]
+
+  tags = {
+    Name = "${var.phase}-${var.prefix}-github-oidc"
+  }
+}
+
+# GitHub Actions IAM Role
+resource "aws_iam_role" "github_actions" {
+  name = "${var.phase}-${var.prefix}-github-actions-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.github.arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+          }
+          StringLike = {
+            "token.actions.githubusercontent.com:sub" = "repo:${var.github_repository}:*"
+          }
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = "${var.phase}-${var.prefix}-github-actions-role"
+  }
+}
+
+# GitHub Actions Deployment Policy
+resource "aws_iam_role_policy" "github_actions_policy" {
+  name = "${var.phase}-${var.prefix}-github-actions-policy"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:PutObjectAcl",
+          "s3:DeleteObject",
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
+        ]
+        Resource = [
+          aws_s3_bucket.frontend.arn,
+          "${aws_s3_bucket.frontend.arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "cloudfront:CreateInvalidation",
+          "cloudfront:GetInvalidation",
+          "cloudfront:ListInvalidations"
+        ]
+        Resource = aws_cloudfront_distribution.frontend.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "lambda:UpdateFunctionCode",
+          "lambda:GetFunction",
+          "lambda:GetFunctionConfiguration"
+        ]
+        Resource = aws_lambda_function.api.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::team18-terraform-state-*",
+          "arn:aws:s3:::team18-terraform-state-*/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem"
+        ]
+        Resource = "arn:aws:dynamodb:us-east-1:*:table/team18-terraform-locks"
+      }
+    ]
+  })
 }
