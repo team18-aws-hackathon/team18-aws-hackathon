@@ -46,7 +46,12 @@ export const DiaryPage = ({ onBack, onSaveEntry }: DiaryPageProps) => {
         </div>
 
         {/* Save Button */}
-        <Button fullWidth variant="rose" onClick={onSaveEntry}>
+        <Button 
+          fullWidth 
+          variant="rose" 
+          onClick={() => diaryText.trim() && onSaveEntry()}
+          className={!diaryText.trim() ? 'bg-white border-2 border-accent-400 text-accent-400 cursor-not-allowed' : ''}
+        >
           Save Entry
         </Button>
       </div>
