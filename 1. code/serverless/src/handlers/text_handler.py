@@ -16,7 +16,15 @@ def handle_generate_text(event, headers):
     """
     try:
         # 요청 본문 파싱
-        body = json.loads(event.get('body', '{}'))
+        raw_body = event.get('body')
+        if not raw_body:
+            return {
+                'statusCode': 400,
+                'headers': headers,
+                'body': json.dumps({'error': 'Request body is required'})
+            }
+        
+        body = json.loads(raw_body)
         user_type = body.get('type', '').lower()
         content = body.get('content', '')
         
