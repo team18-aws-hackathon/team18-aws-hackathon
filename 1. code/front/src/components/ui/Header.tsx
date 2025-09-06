@@ -16,7 +16,8 @@ export const Header = ({
   return (
     <div
       className={`p-5 flex items-center justify-between text-lg font-semibold ${
-        className || (showBack ? 'bg-white text-gray-800' : 'bg-beige-500 text-white')
+        className ||
+        (showBack ? 'bg-white text-gray-800' : 'bg-rose-400 text-white')
       }`}
     >
       {showBack && (
