@@ -2,7 +2,7 @@ name: Frontend CD (Deploy to S3 + CloudFront)
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, iac/feat/dev-workflow ]  # 현재 브랜치 추가
     paths:
       - '1. code/front/**'
   workflow_dispatch:  # 수동 트리거 추가

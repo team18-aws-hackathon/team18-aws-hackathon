@@ -2,7 +2,7 @@ name: Backend CD (Deploy to Lambda)
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, iac/feat/dev-workflow ]  # 현재 브랜치 추가
     paths:
       - '1. code/serverless/**'
   workflow_dispatch:  # 수동 트리거 추가
