@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { MobileContainer, Header, Button, TextArea } from '@/components';
 
 interface DiaryPageProps {
-  onBack: () => void;
+  onBack: () => void
+  onSaveEntry: () => void
 }
 
-export const DiaryPage = ({ onBack }: DiaryPageProps) => {
-  const [diaryText, setDiaryText] = useState('');
+export const DiaryPage = ({ onBack, onSaveEntry }: DiaryPageProps) => {
+  const [diaryText, setDiaryText] = useState('')
 
   return (
     <MobileContainer>
@@ -41,7 +42,9 @@ export const DiaryPage = ({ onBack }: DiaryPageProps) => {
         </div>
 
         {/* Save Button */}
-        <Button fullWidth>Save Entry</Button>
+        <Button fullWidth onClick={onSaveEntry}>
+          Save Entry
+        </Button>
       </div>
     </MobileContainer>
   );
