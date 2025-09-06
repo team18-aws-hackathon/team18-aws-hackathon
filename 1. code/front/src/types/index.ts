@@ -1,4 +1,3 @@
-// API 요청/응답 타입 정의
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -6,21 +5,36 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-// 3개 API 요청 타입
+// 3개 API 모두 같은 텍스트를 받음
 export interface TextRequest {
   text: string;
 }
 
 export interface ImageRequest {
-  image: string; // base64 또는 URL
+  text: string; // 텍스트를 이미지로 처리
 }
 
 export interface VoiceRequest {
-  audio: string; // base64 또는 URL
+  text: string; // 텍스트를 음성으로 처리
 }
 
-// 응답 데이터 타입 (필요에 따라 수정)
+// 각 API 응답 타입
 export interface ProcessedResult {
-  result: string;
-  timestamp: string;
+  diary_id?: string;
+  compliment?: string;
+  quality_analysis?: {
+    level?: string;
+    message?: string;
+  };
+  error?: string;
+  image_url?: string; // image API 응답에 포함
+  audio_url?: string; // voice API 응답에 포함
+}
+
+// 전체 저장 결과
+export interface SaveDiaryResult {
+  textResult?: ProcessedResult;
+  imageResult?: ProcessedResult;
+  voiceResult?: ProcessedResult;
+  errors?: string[];
 }

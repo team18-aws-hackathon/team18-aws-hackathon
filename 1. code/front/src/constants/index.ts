@@ -1,4 +1,5 @@
-export const API_BASE_URL = 'https://your-api-gateway-url.com'; // 실제 URL로 변경
+export const API_BASE_URL =
+  'https://7jkqyuppw2.execute-api.us-east-1.amazonaws.com/dev'; // 실제 URL로 변경
 
 export const API_ENDPOINTS = {
   TEXT: '/generate/text',

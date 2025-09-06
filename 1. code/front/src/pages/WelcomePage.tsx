@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAppStore } from '@/store';
 import { MobileContainer, Header, Button, Input } from '@/components';
 import {
   Radio,
@@ -15,8 +16,8 @@ interface WelcomePageProps {
 }
 
 export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
+  const { selectedQuokka, setSelectedQuokka } = useAppStore();
   const [name, setName] = useState('');
-  const [selectedQuokka, setSelectedQuokka] = useState<'F' | 'T'>('F');
 
   return (
     <MobileContainer>
@@ -134,7 +135,7 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
 
         {/* Start Button */}
         <div className="mt-auto">
-          <Button fullWidth variant='rose' onClick={onComplete}>
+          <Button fullWidth variant="rose" onClick={onComplete}>
             Start Journey
           </Button>
         </div>

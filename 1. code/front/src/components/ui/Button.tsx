@@ -24,7 +24,7 @@ export const Button = ({
   };
 
   return (
-    <button 
+    <button
       className={`${baseClasses} ${widthClass} ${className || variantClasses[variant]}`}
       onClick={onClick}
     >

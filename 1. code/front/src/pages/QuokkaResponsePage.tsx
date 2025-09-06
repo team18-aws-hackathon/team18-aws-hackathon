@@ -1,27 +1,31 @@
 import { MobileContainer, Header, Button } from '@/components';
 import { PlayArrow, Pause, Download } from '@mui/icons-material';
 import { useState, useEffect, useRef } from 'react';
-import diaryImage004 from '@/assets/diary-20240901-004.png';
-import diaryImage005 from '@/assets/diary-20240901-005.png';
-import diaryImage006 from '@/assets/diary-20240901-003.png';
+import { useAppStore } from '@/store/appStore';
 
 interface QuokkaResponsePageProps {
   onBack: () => void;
 }
 
 export const QuokkaResponsePage = ({ onBack }: QuokkaResponsePageProps) => {
-  const [currentImage, setCurrentImage] = useState('');
+  const { apiResults } = useAppStore();
+  const currentImage = apiResults?.imageResult?.image_url || '';
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(45);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const images = [diaryImage004, diaryImage005, diaryImage006];
+  console.log('API Results:', apiResults);
 
-  useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * images.length);
-    setCurrentImage(images[randomIndex]);
-  }, []);
+  // const images = [diaryImage004, diaryImage005, diaryImage006];
+
+  // Use apiResults.textResult, apiResults.imageResult, apiResults.voiceResult
+  // to display the API responses
+
+  // useEffect(() => {
+  //   const randomIndex = Math.floor(Math.random() * images.length);
+  //   setCurrentImage(images[randomIndex]);
+  // }, []);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -61,8 +65,12 @@ export const QuokkaResponsePage = ({ onBack }: QuokkaResponsePageProps) => {
   };
 
   const handleDownload = () => {
-    // Download functionality will be implemented later
-    console.log('Download image');
+    const link = document.createElement('a');
+    link.href = currentImage;
+    link.download = 'quokka-image.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -110,11 +118,7 @@ export const QuokkaResponsePage = ({ onBack }: QuokkaResponsePageProps) => {
             </div>
 
             <p className="text-white text-base">
-              Thank you for sharing your thoughts with me today! I can see that
-              you're going through a lot right now. Remember that it's
-              completely normal to feel this way, and you're doing great by
-              taking the time to reflect on your emotions. Keep being kind to
-              yourself! 🌟
+              {apiResults?.textResult?.compliment}
             </p>
           </div>
         </div>

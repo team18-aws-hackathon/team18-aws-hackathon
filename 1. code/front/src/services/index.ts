@@ -1,49 +1,62 @@
-import { API_BASE_URL, API_ENDPOINTS, API_CONFIG } from '../constants';
-import type {
-  ApiResponse,
-  TextRequest,
-  ImageRequest,
-  VoiceRequest,
-  ProcessedResult,
-} from '../types';
+// src/services/apiService.ts
+import { SaveDiaryResult } from '@/types';
 
-class ApiService {
-  private async request<TRequest, TResponse>(
-    endpoint: string,
-    data: TRequest
-  ): Promise<ApiResponse<TResponse>> {
-    try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: 'POST',
-        headers: API_CONFIG.headers,
-        body: JSON.stringify(data),
-      });
+const API_BASE_URL =
+  'https://7jkqyuppw2.execute-api.us-east-1.amazonaws.com/dev';
 
-      const result = await response.json();
-      return result;
-    } catch (error) {
+export const callAllApis = async (
+  content: string,
+  type: 'F' | 'T'
+): Promise<SaveDiaryResult> => {
+  try {
+    // 1. 먼저 text API 호출
+    const textResponse = await fetch(`${API_BASE_URL}/generate/text`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, type }),
+    });
+    const textResult = await textResponse.json();
+
+    // 2. diary_id가 있으면 image, voice API 호출
+    const diaryId = textResult?.diary_id;
+    const compliment = textResult?.compliment;
+
+    if (!diaryId) {
       return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        textResult,
+        errors: ['diary_id not found in text response'],
       };
     }
-  }
 
-  async processText(data: TextRequest): Promise<ApiResponse<ProcessedResult>> {
-    return this.request<TextRequest, ProcessedResult>(API_ENDPOINTS.TEXT, data);
-  }
+    // 3. image와 voice API 동시 호출
+    const [imageResult, voiceResult] = await Promise.allSettled([
+      fetch(`${API_BASE_URL}/generate/image`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ diary_id: diaryId, compliment }),
+      }).then((res) => res.json()),
 
-  async processImage(
-    data: ImageRequest
-  ): Promise<ApiResponse<ProcessedResult>> {
-    return this.request<ImageRequest, ProcessedResult>(API_ENDPOINTS.IMAGE, data);
-  }
+      fetch(`${API_BASE_URL}/generate/voice`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ diary_id: diaryId, compliment }),
+      }).then((res) => res.json()),
+    ]);
 
-  async processVoice(
-    data: VoiceRequest
-  ): Promise<ApiResponse<ProcessedResult>> {
-    return this.request<VoiceRequest, ProcessedResult>(API_ENDPOINTS.VOICE, data);
+    return {
+      textResult,
+      imageResult:
+        imageResult.status === 'fulfilled' ? imageResult.value : undefined,
+      voiceResult:
+        voiceResult.status === 'fulfilled' ? voiceResult.value : undefined,
+      errors: [
+        ...(imageResult.status === 'rejected' ? [`Image API failed`] : []),
+        ...(voiceResult.status === 'rejected' ? [`Voice API failed`] : []),
+      ],
+    };
+  } catch (error) {
+    return {
+      errors: [`API call failed: ${error}`],
+    };
   }
-}
-
-export const apiService = new ApiService();
+};
