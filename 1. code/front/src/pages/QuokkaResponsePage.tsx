@@ -10,7 +10,10 @@ interface QuokkaResponsePageProps {
   userName?: string;
 }
 
-export const QuokkaResponsePage = ({ onHome, userName }: QuokkaResponsePageProps) => {
+export const QuokkaResponsePage = ({
+  onHome,
+  userName,
+}: QuokkaResponsePageProps) => {
   const [currentImage, setCurrentImage] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -124,7 +127,7 @@ export const QuokkaResponsePage = ({ onHome, userName }: QuokkaResponsePageProps
             </div>
 
             <p className="text-white text-base">
-              {userName ? `${userName}아 그런 일이 있었구나. ` : ''}
+              {userName ? `${userName}, 그런 일이 있었구나. ` : ''}
               Thank you for sharing your thoughts with me today! I can see that
               you're going through a lot right now. Remember that it's
               completely normal to feel this way, and you're doing great by
