@@ -538,15 +538,15 @@ resource "aws_cloudwatch_log_group" "lambda_logs" {
 # GitHub OIDC Provider
 resource "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
-  
+
   client_id_list = [
     "sts.amazonaws.com"
   ]
-  
+
   thumbprint_list = [
     "6938fd4d98bab03faadb97b34396831e3780aea1"
   ]
-  
+
   tags = {
     Name = "${var.phase}-${var.prefix}-github-oidc"
   }
@@ -555,7 +555,7 @@ resource "aws_iam_openid_connect_provider" "github" {
 # GitHub Actions IAM Role
 resource "aws_iam_role" "github_actions" {
   name = "${var.phase}-${var.prefix}-github-actions-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -576,7 +576,7 @@ resource "aws_iam_role" "github_actions" {
       }
     ]
   })
-  
+
   tags = {
     Name = "${var.phase}-${var.prefix}-github-actions-role"
   }
@@ -586,7 +586,7 @@ resource "aws_iam_role" "github_actions" {
 resource "aws_iam_role_policy" "github_actions_policy" {
   name = "${var.phase}-${var.prefix}-github-actions-policy"
   role = aws_iam_role.github_actions.id
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -621,6 +621,26 @@ resource "aws_iam_role_policy" "github_actions_policy" {
           "lambda:GetFunctionConfiguration"
         ]
         Resource = aws_lambda_function.api.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::team18-terraform-state-*",
+          "arn:aws:s3:::team18-terraform-state-*/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem"
+        ]
+        Resource = "arn:aws:dynamodb:us-east-1:*:table/team18-terraform-locks"
       }
     ]
   })

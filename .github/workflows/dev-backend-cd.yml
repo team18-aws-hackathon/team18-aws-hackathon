@@ -5,6 +5,12 @@ on:
     branches: [ develop ]
     paths:
       - '1. code/serverless/**'
+  workflow_dispatch:  # 수동 트리거 추가
+    inputs:
+      reason:
+        description: 'Reason for manual deployment'
+        required: false
+        default: 'Manual test'
 
 jobs:
   deploy:
@@ -39,6 +45,15 @@ jobs:
       with:
         role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/dev-qqq-github-actions-role
         aws-region: us-east-1
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.0
+    
+    - name: Terraform Init
+      working-directory: ./2. IaC
+      run: terraform init
     
     - name: Get Lambda function name
       id: terraform-outputs
