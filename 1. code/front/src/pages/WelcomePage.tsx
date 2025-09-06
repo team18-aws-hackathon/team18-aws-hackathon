@@ -8,6 +8,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { HelpOutline } from '@mui/icons-material';
+import diaryImage from '@/assets/diary-20240901-004.png';
 
 interface WelcomePageProps {
   onComplete: () => void;
@@ -19,12 +20,18 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
 
   return (
     <MobileContainer>
-      <Header title="Quokka Diary" />
+      <Header title="Quokka-core Mindset Diary" />
 
       <div className="flex-1 p-6 flex flex-col bg-white">
         {/* Quokka Character */}
         <div className="text-center mb-8">
-          <div className="text-8xl mb-4">🐨</div>
+          <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mx-auto">
+            <img
+              src={diaryImage}
+              alt="Quokka"
+              className="w-24 h-24 object-contain"
+            />
+          </div>
           <h2 className="text-2xl mb-2 text-gray-800 font-bold">Welcome!</h2>
           <p className="text-gray-600 text-base">
             I'm here to listen. What's on your mind?
@@ -71,11 +78,11 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
                 value="F"
                 control={
                   <Radio
-                    className="text-gray-300 checked:text-lime-500"
+                    className="text-gray-300 checked:text-rose-500"
                     sx={{
                       color: 'grey.300',
                       '&.Mui-checked': {
-                        color: 'lime.500',
+                        color: 'rose.500',
                       },
                     }}
                   />
@@ -86,9 +93,9 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
                   padding: '10px',
                   border: '2px solid',
                   borderRadius: '12px',
-                  borderColor: selectedQuokka === 'F' ? 'lime.500' : 'grey.300',
+                  borderColor: selectedQuokka === 'F' ? 'rose.500' : 'grey.300',
                   backgroundColor:
-                    selectedQuokka === 'F' ? 'lime.100' : 'white',
+                    selectedQuokka === 'F' ? 'rose.100' : 'white',
                   width: '100%',
                 }}
               />
@@ -96,11 +103,11 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
                 value="T"
                 control={
                   <Radio
-                    className="text-gray-300 checked:text-lime-500"
+                    className="text-gray-300 checked:text-rose-500"
                     sx={{
                       color: 'grey.300',
                       '&.Mui-checked': {
-                        color: 'lime.500',
+                        color: 'rose.500',
                       },
                     }}
                   />
@@ -115,9 +122,9 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
                   padding: '10px',
                   border: '2px solid',
                   borderRadius: '12px',
-                  borderColor: selectedQuokka === 'T' ? 'lime.500' : 'grey.300',
+                  borderColor: selectedQuokka === 'T' ? 'rose.500' : 'grey.300',
                   backgroundColor:
-                    selectedQuokka === 'T' ? 'lime.100' : 'white',
+                    selectedQuokka === 'T' ? 'rose.100' : 'white',
                   width: '100%',
                 }}
               />
@@ -127,7 +134,7 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
 
         {/* Start Button */}
         <div className="mt-auto">
-          <Button fullWidth onClick={onComplete}>
+          <Button fullWidth variant='rose' onClick={onComplete}>
             Start Journey
           </Button>
         </div>
