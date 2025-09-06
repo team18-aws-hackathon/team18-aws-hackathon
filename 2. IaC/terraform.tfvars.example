@@ -7,3 +7,6 @@ prefix     = "qqq"
 # Lambda Configuration
 lambda_memory_size = 1024
 lambda_timeout     = 60
+
+# GitHub Repository (OIDC)
+github_repository = "team18-aws-hackathon/team18-aws-hackathon"
