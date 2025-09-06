@@ -27,3 +27,9 @@ variable "lambda_timeout" {
   type        = number
   default     = 60
 }
+
+variable "github_repository" {
+  description = "GitHub repository in format 'owner/repo'"
+  type        = string
+  default     = "your-org/team18-aws-hackathon"
+}
