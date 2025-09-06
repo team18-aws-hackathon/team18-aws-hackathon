@@ -11,7 +11,7 @@ import { HelpOutline } from '@mui/icons-material';
 import diaryImage from '@/assets/diary-20240901-004.png';
 
 interface WelcomePageProps {
-  onComplete: () => void;
+  onComplete: (userName: string, quokkaType: 'F' | 'T') => void;
 }
 
 export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
@@ -134,7 +134,12 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
 
         {/* Start Button */}
         <div className="mt-auto">
-          <Button fullWidth variant="rose" onClick={onComplete}>
+          <Button 
+            fullWidth 
+            variant="rose" 
+            onClick={() => name.trim() && onComplete(name.trim(), selectedQuokka)}
+            className={!name.trim() ? 'bg-white border-2 border-accent-400 text-accent-400 cursor-not-allowed' : ''}
+          >
             Start Journey
           </Button>
         </div>

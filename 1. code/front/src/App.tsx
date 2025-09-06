@@ -12,8 +12,10 @@ function App() {
   const [currentPage, setCurrentPage] = useState<
     'welcome' | 'diary' | 'loading' | 'response'
   >('welcome');
+  const [userName, setUserName] = useState<string>('');
 
-  const handleWelcomeComplete = () => {
+  const handleWelcomeComplete = (name: string) => {
+    setUserName(name);
     setCurrentPage('diary');
   };
 
@@ -41,7 +43,7 @@ function App() {
         <LoadingPage onComplete={handleLoadingComplete} />
       )}
       {currentPage === 'response' && (
-        <QuokkaResponsePage onHome={handleBackToWelcome} />
+        <QuokkaResponsePage onHome={handleBackToWelcome} userName={userName} />
       )}
     </ThemeProvider>
   );
