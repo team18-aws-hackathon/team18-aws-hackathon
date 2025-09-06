@@ -79,7 +79,7 @@ export const QuokkaResponsePage = ({ onBack }: QuokkaResponsePageProps) => {
             </audio>
             <div className="flex items-center gap-3 mb-4">
               {/* Play Button Circle */}
-              <div 
+              <div
                 className="w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-pointer"
                 onClick={togglePlay}
               >
@@ -92,14 +92,20 @@ export const QuokkaResponsePage = ({ onBack }: QuokkaResponsePageProps) => {
 
               {/* Progress Bar */}
               <div className="flex-1 flex items-center gap-2">
-                <span className="text-xs text-white">{formatTime(currentTime)}</span>
+                <span className="text-xs text-white">
+                  {formatTime(currentTime)}
+                </span>
                 <div className="flex-1 h-1 bg-white bg-opacity-30 rounded-full">
-                  <div 
+                  <div
                     className="h-full bg-white rounded-full transition-all duration-100"
-                    style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                    style={{
+                      width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%`,
+                    }}
                   ></div>
                 </div>
-                <span className="text-xs text-white">{formatTime(duration)}</span>
+                <span className="text-xs text-white">
+                  {formatTime(duration)}
+                </span>
               </div>
             </div>
 

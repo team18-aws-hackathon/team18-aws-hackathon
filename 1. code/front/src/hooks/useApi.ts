@@ -21,8 +21,8 @@ export const useApi = () => {
 // 개별 API 훅들
 export const useTextApi = () => {
   const { loading, callApi } = useApi();
-  
-  const processText = (text: string) => 
+
+  const processText = (text: string) =>
     callApi(() => apiService.processText({ text }));
 
   return { processText, loading };
@@ -30,8 +30,8 @@ export const useTextApi = () => {
 
 export const useImageApi = () => {
   const { loading, callApi } = useApi();
-  
-  const processImage = (image: string) => 
+
+  const processImage = (image: string) =>
     callApi(() => apiService.processImage({ image }));
 
   return { processImage, loading };
@@ -39,8 +39,8 @@ export const useImageApi = () => {
 
 export const useVoiceApi = () => {
   const { loading, callApi } = useApi();
-  
-  const processVoice = (audio: string) => 
+
+  const processVoice = (audio: string) =>
     callApi(() => apiService.processVoice({ audio }));
 
   return { processVoice, loading };
