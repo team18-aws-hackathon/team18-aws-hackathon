@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { MobileContainer, Header, Button, TextArea } from '@/components';
-import diaryImage from '@/assets/diary-20240901-004.png';
+import { useAppStore } from '@/store/appStore';
+import { callAllApis } from '@/services/index.ts';
 
 interface DiaryPageProps {
   onBack: () => void;
@@ -8,7 +8,18 @@ interface DiaryPageProps {
 }
 
 export const DiaryPage = ({ onBack, onSaveEntry }: DiaryPageProps) => {
-  const [diaryText, setDiaryText] = useState('');
+  const { diaryText, setDiaryText, selectedQuokka, setApiResults } =
+    useAppStore();
+
+  const handleSave = async () => {
+    try {
+      const results = await callAllApis(diaryText, selectedQuokka);
+      setApiResults(results);
+      onSaveEntry();
+    } catch (error) {
+      console.error('Failed to save diary:', error);
+    }
+  };
 
   return (
     <MobileContainer>
@@ -46,12 +57,7 @@ export const DiaryPage = ({ onBack, onSaveEntry }: DiaryPageProps) => {
         </div>
 
         {/* Save Button */}
-        <Button 
-          fullWidth 
-          variant="rose" 
-          onClick={() => diaryText.trim() && onSaveEntry()}
-          className={!diaryText.trim() ? 'bg-white border-2 border-accent-400 text-accent-400 cursor-not-allowed' : ''}
-        >
+        <Button fullWidth variant="rose" onClick={handleSave}>
           Save Entry
         </Button>
       </div>
