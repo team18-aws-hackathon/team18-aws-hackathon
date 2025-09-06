@@ -25,16 +25,8 @@ function App() {
     setCurrentPage('loading');
   };
 
-  const handleBackToDiary = () => {
-    setCurrentPage('diary');
-  };
-
   const handleLoadingComplete = () => {
     setCurrentPage('response');
-  };
-
-  const handleBackToLoading = () => {
-    setCurrentPage('loading');
   };
 
   return (
@@ -46,13 +38,10 @@ function App() {
         <DiaryPage onBack={handleBackToWelcome} onSaveEntry={handleSaveEntry} />
       )}
       {currentPage === 'loading' && (
-        <LoadingPage
-          onBack={handleBackToDiary}
-          onComplete={handleLoadingComplete}
-        />
+        <LoadingPage onComplete={handleLoadingComplete} />
       )}
       {currentPage === 'response' && (
-        <QuokkaResponsePage onBack={handleBackToLoading} />
+        <QuokkaResponsePage onHome={handleBackToWelcome} />
       )}
     </ThemeProvider>
   );
