@@ -71,11 +71,7 @@ export const QuokkaResponsePage = ({ onBack }: QuokkaResponsePageProps) => {
         </div>
 
         {/* Download Button */}
-        <Button
-          fullWidth
-          onClick={handleDownload}
-          className="bg-accent-300 hover:bg-accent-500"
-        >
+        <Button fullWidth onClick={handleDownload} variant="rose">
           <Download sx={{ fontSize: 20 }} />
           Download Image
         </Button>
