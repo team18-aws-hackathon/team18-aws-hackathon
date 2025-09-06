@@ -1,10 +1,11 @@
 import { MobileContainer, Header, Button } from '@/components';
-import { PlayArrow, Pause, Download } from '@mui/icons-material';
+import { PlayArrow, Pause, Download, Home } from '@mui/icons-material';
 import { useState, useEffect, useRef } from 'react';
 import { useAppStore } from '@/store/appStore';
 
 interface QuokkaResponsePageProps {
-  onBack: () => void;
+  onHome: () => void;
+  userName?: string;
 }
 
 export const QuokkaResponsePage = ({ onBack }: QuokkaResponsePageProps) => {
@@ -75,7 +76,20 @@ export const QuokkaResponsePage = ({ onBack }: QuokkaResponsePageProps) => {
 
   return (
     <MobileContainer>
-      <Header title="Quokka Response" showBack onBack={onBack} />
+      <Header
+        title="Quokka Response"
+        showBack={false}
+        className="bg-white text-gray-800"
+        rightIcon={
+          <button
+            title="goHome"
+            onClick={onHome}
+            className="w-10 h-10 bg-black rounded-full flex items-center justify-center"
+          >
+            <Home className="text-white" sx={{ fontSize: 20 }} />
+          </button>
+        }
+      />
 
       <div className="flex-1 p-6 flex flex-col bg-white">
         {/* Speech Bubble */}
@@ -129,7 +143,7 @@ export const QuokkaResponsePage = ({ onBack }: QuokkaResponsePageProps) => {
             <img
               src={currentImage}
               alt="Quokka"
-              className="w-48 h-48 object-contain"
+              className="w-100 h-100 object-contain"
             />
           </div>
         </div>

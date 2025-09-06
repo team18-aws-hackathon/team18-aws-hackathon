@@ -12,8 +12,10 @@ function App() {
   const [currentPage, setCurrentPage] = useState<
     'welcome' | 'diary' | 'loading' | 'response'
   >('welcome');
+  const [userName, setUserName] = useState<string>('');
 
-  const handleWelcomeComplete = () => {
+  const handleWelcomeComplete = (name: string) => {
+    setUserName(name);
     setCurrentPage('diary');
   };
 
@@ -25,16 +27,8 @@ function App() {
     setCurrentPage('loading');
   };
 
-  const handleBackToDiary = () => {
-    setCurrentPage('diary');
-  };
-
   const handleLoadingComplete = () => {
     setCurrentPage('response');
-  };
-
-  const handleBackToLoading = () => {
-    setCurrentPage('loading');
   };
 
   return (
@@ -46,13 +40,10 @@ function App() {
         <DiaryPage onBack={handleBackToWelcome} onSaveEntry={handleSaveEntry} />
       )}
       {currentPage === 'loading' && (
-        <LoadingPage
-          onBack={handleBackToDiary}
-          onComplete={handleLoadingComplete}
-        />
+        <LoadingPage onComplete={handleLoadingComplete} />
       )}
       {currentPage === 'response' && (
-        <QuokkaResponsePage onBack={handleBackToLoading} />
+        <QuokkaResponsePage onHome={handleBackToWelcome} userName={userName} />
       )}
     </ThemeProvider>
   );

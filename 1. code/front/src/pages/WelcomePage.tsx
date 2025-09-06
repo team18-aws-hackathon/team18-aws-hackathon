@@ -12,7 +12,7 @@ import { HelpOutline } from '@mui/icons-material';
 import diaryImage from '@/assets/diary-20240901-004.png';
 
 interface WelcomePageProps {
-  onComplete: () => void;
+  onComplete: (userName: string, quokkaType: 'F' | 'T') => void;
 }
 
 export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
@@ -88,7 +88,7 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
                     }}
                   />
                 }
-                label={<div className="flex">F Quokka</div>}
+                label={<div className="flex text-xl">공감하는 쿼카</div>}
                 sx={{
                   margin: 0,
                   padding: '10px',
@@ -115,7 +115,7 @@ export const WelcomePage = ({ onComplete }: WelcomePageProps) => {
                 }
                 label={
                   <div className="flex items-center gap-2">
-                    <span>T Quokka</span>
+                    <span className="text-xl">조언하는 쿼카</span>
                   </div>
                 }
                 sx={{

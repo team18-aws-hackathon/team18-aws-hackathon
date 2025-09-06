@@ -29,10 +29,13 @@ export const DiaryPage = ({ onBack, onSaveEntry }: DiaryPageProps) => {
         {/* Quokka Ask Section */}
         <div className="mb-6 flex items-start gap-3">
           {/* Quokka Avatar */}
-          <div className="w-12 h-12 rounded-full bg-rose-500 flex items-center justify-center text-2xl relative flex-shrink-0">
-            🐨
+          <div className="w-12 h-12 rounded-full bg-white border border-rose-400 flex items-center justify-center relative flex-shrink-0">
+            <img
+              src={diaryImage}
+              alt="Quokka"
+              className="w-10 h-10 object-contain"
+            />
           </div>
-
           {/* Speech Bubble */}
           <div
             className="bg-white rounded-2xl p-4 relative flex-1"

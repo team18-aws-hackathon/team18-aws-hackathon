@@ -3,13 +3,21 @@ interface HeaderProps {
   showBack?: boolean;
   onBack?: () => void;
   rightIcon?: React.ReactNode;
+  className?: string;
 }
 
-export const Header = ({ title, showBack, onBack, rightIcon }: HeaderProps) => {
+export const Header = ({
+  title,
+  showBack,
+  onBack,
+  rightIcon,
+  className,
+}: HeaderProps) => {
   return (
     <div
       className={`p-5 flex items-center justify-between text-lg font-semibold ${
-        showBack ? 'bg-white text-gray-800' : 'bg-rose-500 text-white'
+        className ||
+        (showBack ? 'bg-white text-gray-800' : 'bg-rose-400 text-white')
       }`}
     >
       {showBack && (
