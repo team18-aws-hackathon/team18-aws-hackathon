@@ -17,7 +17,7 @@ export const DiaryPage = ({ onBack, onSaveEntry }: DiaryPageProps) => {
         {/* Quokka Ask Section */}
         <div className="mb-6 flex items-start gap-3">
           {/* Quokka Avatar */}
-          <div className="w-12 h-12 rounded-full bg-lime-500 flex items-center justify-center text-2xl relative flex-shrink-0">
+          <div className="w-12 h-12 rounded-full bg-rose-500 flex items-center justify-center text-2xl relative flex-shrink-0">
             🐨
           </div>
 
@@ -42,7 +42,7 @@ export const DiaryPage = ({ onBack, onSaveEntry }: DiaryPageProps) => {
         </div>
 
         {/* Save Button */}
-        <Button fullWidth onClick={onSaveEntry}>
+        <Button fullWidth variant='rose' onClick={onSaveEntry}>
           Save Entry
         </Button>
       </div>
