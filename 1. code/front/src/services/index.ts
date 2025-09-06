@@ -2,7 +2,7 @@ import { API_BASE_URL, API_ENDPOINTS, API_CONFIG } from '../constants';
 import type { ApiResponse, TextRequest, ImageRequest, VoiceRequest, ProcessedResult } from '../types';
 
 class ApiService {
-  private async request<T>(endpoint: string, data: T): Promise<ApiResponse<T>> {
+  private async request<TRequest, TResponse>(endpoint: string, data: TRequest): Promise<ApiResponse<TResponse>> {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
@@ -21,15 +21,15 @@ class ApiService {
   }
 
   async processText(data: TextRequest): Promise<ApiResponse<ProcessedResult>> {
-    return this.request<ProcessedResult>(API_ENDPOINTS.TEXT, data);
+    return this.request<TextRequest, ProcessedResult>(API_ENDPOINTS.TEXT, data);
   }
 
   async processImage(data: ImageRequest): Promise<ApiResponse<ProcessedResult>> {
-    return this.request<ProcessedResult>(API_ENDPOINTS.IMAGE, data);
+    return this.request<ImageRequest, ProcessedResult>(API_ENDPOINTS.IMAGE, data);
   }
 
   async processVoice(data: VoiceRequest): Promise<ApiResponse<ProcessedResult>> {
-    return this.request<ProcessedResult>(API_ENDPOINTS.VOICE, data);
+    return this.request<VoiceRequest, ProcessedResult>(API_ENDPOINTS.VOICE, data);
   }
 }
 
